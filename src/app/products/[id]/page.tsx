@@ -16,6 +16,7 @@ type ApiProduct = {
   image?: string;
   stockQuantity?: number;
   specs?: Record<string, string>;
+  batches?: any[];
 };
 
 const base = process.env.NEXT_PUBLIC_API ?? "http://localhost:8080";
@@ -30,7 +31,9 @@ const normalizeProduct = (p: any): ApiProduct => ({
   description: p?.description ?? "",
   images: Array.isArray(p?.images) ? p.images : undefined,
   image: p?.image ?? p?.imageUrl ?? p?.image_url ?? undefined,
-  stockQuantity: Number(p?.stockQuantity ?? p?.stock_quantity ?? 0),
+  stockQuantity: p?.batches && p.batches.length > 0
+    ? p.batches.reduce((sum: number, b: any) => sum + (b.availableQuantity ?? 0), 0)
+    : Number(p?.stockQuantity ?? p?.stock_quantity ?? 0),
   specs: p?.specs ?? undefined,
 });
 
@@ -54,7 +57,7 @@ export default function ProductDetailPage() {
   const fetchStockQuantity = async (id: number) => {
     try {
       setStockLoading(true);
-      const res = await fetch(`${base}/api/products/${id}`, { 
+      const res = await fetch(`${base}/api/products/${id}`, {
         cache: "no-store",
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -242,9 +245,8 @@ export default function ProductDetailPage() {
                   <button
                     key={i}
                     onClick={() => setActiveImg(src)}
-                    className={`border rounded p-1 h-20 flex items-center justify-center ${
-                      activeImg === src ? "border-green-600" : "border-gray-200"
-                    }`}
+                    className={`border rounded p-1 h-20 flex items-center justify-center ${activeImg === src ? "border-green-600" : "border-gray-200"
+                      }`}
                   >
                     <img
                       src={src}
@@ -289,11 +291,10 @@ export default function ProductDetailPage() {
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <span className={`text-lg font-bold ${
-                        currentStock > 10 ? 'text-green-600' : 
-                        currentStock > 5 ? 'text-yellow-600' : 
-                        currentStock > 0 ? 'text-orange-600' : 'text-red-600'
-                      }`}>
+                      <span className={`text-lg font-bold ${currentStock > 10 ? 'text-green-600' :
+                          currentStock > 5 ? 'text-yellow-600' :
+                            currentStock > 0 ? 'text-orange-600' : 'text-red-600'
+                        }`}>
                         {stockDisplay}
                       </span>
                       <span className="text-xs text-gray-500">units available</span>
@@ -314,18 +315,17 @@ export default function ProductDetailPage() {
                   </button>
                 </div>
               </div>
-              
+
               {/* Stock Level Indicator */}
               <div className="mt-2">
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      currentStock > 10 ? 'bg-green-500' : 
-                      currentStock > 5 ? 'bg-yellow-500' : 
-                      currentStock > 0 ? 'bg-orange-500' : 'bg-red-500'
-                    }`}
-                    style={{ 
-                      width: `${Math.min(100, (stockDisplay / Math.max(stockDisplay, 20)) * 100)}%` 
+                  <div
+                    className={`h-2 rounded-full transition-all duration-300 ${currentStock > 10 ? 'bg-green-500' :
+                        currentStock > 5 ? 'bg-yellow-500' :
+                          currentStock > 0 ? 'bg-orange-500' : 'bg-red-500'
+                      }`}
+                    style={{
+                      width: `${Math.min(100, (stockDisplay / Math.max(stockDisplay, 20)) * 100)}%`
                     }}
                   ></div>
                 </div>
@@ -395,21 +395,19 @@ export default function ProductDetailPage() {
             <div className="mt-8">
               <div className="flex gap-4 border-b">
                 <button
-                  className={`pb-2 font-semibold ${
-                    tab === "desc"
+                  className={`pb-2 font-semibold ${tab === "desc"
                       ? "text-green-700 border-b-2 border-green-700"
                       : "text-gray-600"
-                  }`}
+                    }`}
                   onClick={() => setTab("desc")}
                 >
                   Description
                 </button>
                 <button
-                  className={`pb-2 font-semibold ${
-                    tab === "specs"
+                  className={`pb-2 font-semibold ${tab === "specs"
                       ? "text-green-700 border-b-2 border-green-700"
                       : "text-gray-600"
-                  }`}
+                    }`}
                   onClick={() => setTab("specs")}
                 >
                   Specs
