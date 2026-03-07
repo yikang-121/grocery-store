@@ -18,7 +18,11 @@ type Order = {
   date: string;
   status: string;
   items: OrderItem[];
+  subtotal: number;
+  shippingFee: number;
+  discount: number;
   total: number;
+  paymentMethod?: string;
   shippingAddress?: {
     name: string;
     address: string;
@@ -63,81 +67,85 @@ export default function OrdersPage() {
   });
 
   // safe number coercion
-// safe number coercion
-const num = (v: any, d = 0) => {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : d;
-};
+  // safe number coercion
+  const num = (v: any, d = 0) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : d;
+  };
 
-// robust shipping address parser
-const parseShipping = (o: any) => {
-  // 1) already an object
-  if (o?.shippingAddress && typeof o.shippingAddress === "object") {
-    const a = o.shippingAddress;
-    return {
-      name: a.name ?? "",
-      address: a.address ?? a.addressLine ?? "",
-      city: a.city ?? "",
-      postal: a.postal ?? a.postalCode ?? "",
-    };
-  }
-
-  // 2) JSON string in shippingAddressJson (or shipping_address_json)
-  const raw =
-    o.shippingAddressJson ??
-    o.shipping_address_json ??
-    o.shipping_address ??
-    null;
-
-  if (raw && typeof raw === "string") {
-    try {
-      const a = JSON.parse(raw);
+  // robust shipping address parser
+  const parseShipping = (o: any) => {
+    // 1) already an object
+    if (o?.shippingAddress && typeof o.shippingAddress === "object") {
+      const a = o.shippingAddress;
       return {
         name: a.name ?? "",
         address: a.address ?? a.addressLine ?? "",
         city: a.city ?? "",
         postal: a.postal ?? a.postalCode ?? "",
       };
-    } catch {
-      // fall through if not valid JSON
     }
-  }
 
-  // 3) scattered root fields (rare)
-  if (o.shippingName || o.shippingAddressLine || o.shippingCity || o.shippingPostal) {
-    return {
-      name: o.shippingName ?? "",
-      address: o.shippingAddressLine ?? "",
-      city: o.shippingCity ?? "",
-      postal: o.shippingPostal ?? "",
-    };
-  }
+    // 2) JSON string in shippingAddressJson (or shipping_address_json)
+    const raw =
+      o.shippingAddressJson ??
+      o.shipping_address_json ??
+      o.shipping_address ??
+      null;
 
-  return undefined;
-};
+    if (raw && typeof raw === "string") {
+      try {
+        const a = JSON.parse(raw);
+        return {
+          name: a.name ?? "",
+          address: a.address ?? a.addressLine ?? "",
+          city: a.city ?? "",
+          postal: a.postal ?? a.postalCode ?? "",
+        };
+      } catch {
+        // fall through if not valid JSON
+      }
+    }
 
-const normalizeOrder = (o: any): Order => {
-  const items = (o.items || o.orderItems || []).map((it: any) => {
-    const quantity = num(it.quantity ?? it.qty ?? 0);
-    const price = num(it.price ?? it.unitPrice ?? it.unit_price ?? 0);
-    return {
-      id: num(it.id),
-      name: it.name ?? it.productName ?? "",
-      quantity,
-      price,
-      lineTotal: num(it.lineTotal ?? it.line_total ?? price * quantity),
-    };
-  });
+    // 3) scattered root fields (rare)
+    if (o.shippingName || o.shippingAddressLine || o.shippingCity || o.shippingPostal) {
+      return {
+        name: o.shippingName ?? "",
+        address: o.shippingAddressLine ?? "",
+        city: o.shippingCity ?? "",
+        postal: o.shippingPostal ?? "",
+      };
+    }
 
-  return {
-    id: o.id ?? o.orderNo ?? "",
-    date: o.date ?? o.createdAt ?? o.created_at ?? new Date().toISOString(),
-    status: (o.status ?? "PENDING").toUpperCase(),
-    total: num(o.total ?? o.totalAmount ?? o.amount),
-    items,
-    shippingAddress: parseShipping(o),
+    return undefined;
   };
-};
+
+  const normalizeOrder = (o: any): Order => {
+    const items = (o.items || o.orderItems || []).map((it: any) => {
+      const quantity = num(it.quantity ?? it.qty ?? 0);
+      const price = num(it.price ?? it.unitPrice ?? it.unit_price ?? 0);
+      return {
+        id: num(it.id),
+        name: it.name ?? it.productName ?? "",
+        quantity,
+        price,
+        lineTotal: num(it.lineTotal ?? it.line_total ?? price * quantity),
+      };
+    });
+
+    return {
+      id: o.id ?? o.orderNo ?? "",
+      date: o.date ?? o.createdAt ?? o.created_at ?? new Date().toISOString(),
+      status: (o.status ?? "PENDING").toUpperCase(),
+      subtotal: num(o.subtotal),
+      shippingFee: num(o.shippingFee),
+      discount: num(o.discount),
+      total: num(o.total ?? o.totalAmount ?? o.amount),
+      paymentMethod: o.paymentMethod,
+      items,
+      shippingAddress: parseShipping(o),
+    };
+  };
 
 
   useEffect(() => {
@@ -153,7 +161,7 @@ const normalizeOrder = (o: any): Order => {
       const token = getAuthToken();
       const user = getCurrentUser();         // <-- read current user
       if (!user?.id) throw new Error("Missing user id");
-  
+
       const res = await fetch(
         `http://localhost:8080/api/orders?userId=${user.id}`,  // <-- add userId
         {
@@ -163,14 +171,15 @@ const normalizeOrder = (o: any): Order => {
           },
         }
       );
-  
+
       if (!res.ok) {
         const text = await res.text();
         throw new Error(`Failed: ${res.status} ${text}`);
       }
-  
+
       const data = await res.json();
-      setOrders(data);
+      const normalized = (data || []).map(normalizeOrder);
+      setOrders(normalized);
     } catch (err) {
       console.error("Error fetching orders:", err);
       setError("Network error. Please try again.");
@@ -180,52 +189,52 @@ const normalizeOrder = (o: any): Order => {
   };
 
   const cancelOrder = async (orderId: string) => {
-  const reason = window.prompt("Why are you cancelling this order?", "Ordered by mistake");
-  if (!reason) return;
+    const reason = window.prompt("Why are you cancelling this order?", "Ordered by mistake");
+    if (!reason) return;
 
-  const actionRaw = window.prompt("Choose action: REFUND or SUBSTITUTE", "REFUND");
-  const action = (actionRaw || "").toUpperCase() === "SUBSTITUTE" ? "SUBSTITUTE" : "REFUND";
+    const actionRaw = window.prompt("Choose action: REFUND or SUBSTITUTE", "REFUND");
+    const action = (actionRaw || "").toUpperCase() === "SUBSTITUTE" ? "SUBSTITUTE" : "REFUND";
 
-  if (!confirm(`Confirm cancel order ${orderId}?\nReason: ${reason}\nAction: ${action}`)) {
-    return;
-  }
-
-  try {
-    setCancellingOrder(orderId);
-
-    const token = getAuthToken();
-    if (!token) throw new Error("Not authenticated");
-
-    const res = await fetch(`http://localhost:8080/api/orders/${orderId}/cancel`, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        reason: reason,
-        action: action,
-        extraNotes: ""
-      }),
-    });
-
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`Failed to cancel order: ${res.status} ${text}`);
+    if (!confirm(`Confirm cancel order ${orderId}?\nReason: ${reason}\nAction: ${action}`)) {
+      return;
     }
 
-    setOrders(prev =>
-      prev.map(o => (o.id === orderId ? { ...o, status: "CANCELLED" } : o))
-    );
+    try {
+      setCancellingOrder(orderId);
 
-    alert("Order cancelled successfully!");
-  } catch (err) {
-    console.error("Error cancelling order:", err);
-    alert((err as Error).message || "Failed to cancel order. Please try again.");
-  } finally {
-    setCancellingOrder(null);
-  }
-};
+      const token = getAuthToken();
+      if (!token) throw new Error("Not authenticated");
+
+      const res = await fetch(`http://localhost:8080/api/orders/${orderId}/cancel`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          reason: reason,
+          action: action,
+          extraNotes: ""
+        }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Failed to cancel order: ${res.status} ${text}`);
+      }
+
+      setOrders(prev =>
+        prev.map(o => (o.id === orderId ? { ...o, status: "CANCELLED" } : o))
+      );
+
+      alert("Order cancelled successfully!");
+    } catch (err) {
+      console.error("Error cancelling order:", err);
+      alert((err as Error).message || "Failed to cancel order. Please try again.");
+    } finally {
+      setCancellingOrder(null);
+    }
+  };
 
 
 
@@ -236,14 +245,14 @@ const normalizeOrder = (o: any): Order => {
 
   const handleCancellationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     if (!selectedOrderId) return;
-  
+
     setCancellingOrder(selectedOrderId);
     try {
       const token = getAuthToken();
       if (!token) throw new Error("Not authenticated");
-  
+
       const res = await fetch(`http://localhost:8080/api/orders/${selectedOrderId}/cancel`, {
         method: 'PUT',
         headers: {
@@ -251,19 +260,19 @@ const normalizeOrder = (o: any): Order => {
           "Content-Type": "application/json",
         },
 
-          body: JSON.stringify({
-            reason: cancellationForm.reason,
-            action: cancellationForm.refundType.toUpperCase() === 'SUBSTITUTE' ? 'SUBSTITUTE' : 'REFUND',
-            extraNotes: cancellationForm.additionalNotes
-          }),
+        body: JSON.stringify({
+          reason: cancellationForm.reason,
+          action: cancellationForm.refundType.toUpperCase() === 'SUBSTITUTE' ? 'SUBSTITUTE' : 'REFUND',
+          extraNotes: cancellationForm.additionalNotes
+        }),
 
       });
-  
+
       if (!res.ok) {
         const text = await res.text();
         throw new Error(`Failed to cancel order: ${res.status} ${text}`);
       }
-  
+
       setOrders(prevOrders =>
         prevOrders.map(order =>
           order.id === selectedOrderId
@@ -271,9 +280,9 @@ const normalizeOrder = (o: any): Order => {
             : order
         )
       );
-  
+
       alert("Order cancelled successfully! We'll process your request shortly.");
-  
+
       setCancellationForm({
         reason: '',
         refundType: 'refund',
@@ -288,7 +297,7 @@ const normalizeOrder = (o: any): Order => {
       setCancellingOrder(null);
     }
   };
-  
+
 
   const closeCancellationForm = () => {
     setShowCancellationForm(false);
@@ -399,9 +408,34 @@ const normalizeOrder = (o: any): Order => {
                   ))}
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
-                  <span className="font-semibold">Total</span>
-                  <span className="font-bold text-green-700">RM{order.total.toFixed(2)}</span>
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <div className="flex justify-between items-center mb-4 p-2 bg-gray-100 rounded text-sm">
+                    <span className="text-gray-600 font-medium">Payment Method</span>
+                    <span className="font-bold text-gray-800 uppercase">
+                      {(order.paymentMethod || "COD").replace('_', ' ')}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <span>Subtotal</span>
+                      <span>RM{order.subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <span>Delivery Fee</span>
+                      <span>{order.shippingFee > 0 ? `RM${order.shippingFee.toFixed(2)}` : "FREE"}</span>
+                    </div>
+                    {order.discount > 0 && (
+                      <div className="flex justify-between text-sm text-red-600">
+                        <span>Discount</span>
+                        <span>-RM{order.discount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                      <span className="font-semibold text-gray-800">Total</span>
+                      <span className="font-bold text-xl text-green-700">RM{order.total.toFixed(2)}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -409,9 +443,9 @@ const normalizeOrder = (o: any): Order => {
         )}
       </div>
 
-                           {/* Cancellation Form Modal */}
-        {showCancellationForm && (
-          <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50 p-4">
+      {/* Cancellation Form Modal */}
+      {showCancellationForm && (
+        <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
