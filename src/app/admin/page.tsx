@@ -47,6 +47,14 @@ export default function AdminDashboard() {
       iconBg: "bg-purple-100 text-purple-600",
     },
     {
+      href: "/admin/restock-suggestions",
+      icon: <FaChartLine size={24} />,
+      label: "Restock Suggestions",
+      description: "AI-powered restocking with trend & volatility analysis",
+      color: "from-cyan-500 to-blue-600",
+      iconBg: "bg-cyan-100 text-cyan-600",
+    },
+    {
       href: "/admin/reports",
       icon: <FaChartLine size={24} />,
       label: "Financial Reports",
