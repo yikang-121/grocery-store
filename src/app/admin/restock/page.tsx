@@ -1,8 +1,10 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
-  FaUpload, FaExclamationCircle, FaCalculator, FaEye, FaDownload,
+  FaUpload, FaCalculator, FaEye, FaDownload,
   FaInfoCircle, FaCheckCircle, FaExclamationTriangle,
+  FaArrowLeft, FaFileAlt, FaCloudUploadAlt, FaSlidersH,
 } from "react-icons/fa";
 
 /* ---------- Types ---------- */
@@ -28,13 +30,6 @@ type UploadSummary = {
   restocked: number;
   errors: string[];
 };
-
-/* ---------- Mock Low Stock ---------- */
-const lowStockItems = [
-  { id: 1, name: "Apple", stock: 20, minStock: 50 },
-  { id: 2, name: "Banana", stock: 15, minStock: 30 },
-  { id: 3, name: "Organic Spinach", stock: 5, minStock: 20 },
-];
 
 /* ---------- Helpers ---------- */
 const templateHeaders = [
@@ -85,7 +80,6 @@ function parseCsvLine(line: string): string[] {
   return result;
 }
 
-/** tolerant CSV parser */
 /** tolerant CSV parser */
 function parseCsv(text: string): CsvRow[] {
   const lines = text
@@ -160,6 +154,7 @@ export default function RestockPage() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
   const [isDragging, setIsDragging] = useState(false);
+  const [showPricing, setShowPricing] = useState(false);
 
   // pricing controls for PREVIEW
   const [profitMargin, setProfitMargin] = useState<number>(25);
@@ -230,10 +225,10 @@ export default function RestockPage() {
     try {
       setLoading(true);
       const csvText = await file.text();
-      console.log("CSV Content:", csvText); // Debug log
+      console.log("CSV Content:", csvText);
       
       const rows = parseCsv(csvText);
-      console.log("Parsed rows:", rows); // Debug log
+      console.log("Parsed rows:", rows);
       
       if (rows.length === 0) {
         setErr("No valid products found in CSV. Please check the format and ensure the file has data rows.");
@@ -252,13 +247,13 @@ export default function RestockPage() {
         };
       });
       
-      console.log("Computed preview:", computed); // Debug log
+      console.log("Computed preview:", computed);
       
       setPreview(computed);
       setShowPreview(true);
       setMessage(`Processed ${computed.length} products successfully.`);
     } catch (error) {
-      console.error("Preview error:", error); // Debug log
+      console.error("Preview error:", error);
       setErr("Error processing CSV file. Please check the format.");
     } finally {
       setLoading(false);
@@ -299,61 +294,164 @@ export default function RestockPage() {
   };
 
   return (
-    <main className="bg-white min-h-screen py-10 px-2">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-2xl font-bold mb-8 text-green-700">Inventory Management & Bulk Upload</h1>
-
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Low Stock */}
-          <div className="bg-gray-50 rounded-lg shadow p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <FaExclamationCircle size={20} className="text-orange-600" />
-              <h2 className="text-xl font-bold text-green-700">Low Stock Alert</h2>
+    <main className="bg-gray-50 min-h-screen">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-5xl mx-auto px-6 py-8">
+          <Link href="/admin" className="text-sm text-gray-500 hover:text-green-600 flex items-center gap-1 mb-3">
+            <FaArrowLeft size={10} /> Back to Admin
+          </Link>
+          <div className="flex items-center gap-4">
+            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-2xl shadow-lg shadow-blue-200">
+              <FaCloudUploadAlt size={28} className="text-white" />
             </div>
-            <table className="w-full text-sm">
-              <thead><tr className="text-left bg-gray-100"><th className="p-2">Product</th><th className="p-2">Current</th><th className="p-2">Min</th></tr></thead>
-              <tbody>
-                {lowStockItems.map(i => (
-                  <tr key={i.id} className="border-b border-gray-100">
-                    <td className="p-2 font-medium">{i.name}</td>
-                    <td className="p-2 text-red-600 font-semibold">{i.stock}</td>
-                    <td className="p-2 text-gray-600">{i.minStock}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div>
+              <h1 className="text-3xl font-black tracking-tight text-gray-900">Bulk Restock</h1>
+              <p className="text-gray-500 mt-0.5">Upload CSV files to restock inventory in bulk</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        {/* Upload Card */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          {/* Upload Area */}
+          <div className="p-6">
+            <form onSubmit={onUpload}>
+              <input ref={fileRef} type="file" accept=".csv" onChange={onFileChange} className="hidden" />
+              <div
+                onClick={() => fileRef.current?.click()}
+                onDragOver={onDragOver}
+                onDragLeave={onDragLeave}
+                onDrop={onDrop}
+                className={`flex flex-col items-center justify-center gap-3 p-10 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-200 ${
+                  isDragging
+                    ? "border-blue-500 bg-blue-50 scale-[1.01]"
+                    : file
+                    ? "border-green-400 bg-green-50/50"
+                    : "border-gray-200 hover:border-blue-400 hover:bg-gray-50"
+                }`}
+              >
+                {file ? (
+                  <>
+                    <div className="bg-green-100 p-3 rounded-xl">
+                      <FaFileAlt size={24} className="text-green-600" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-semibold text-gray-900">{file.name}</p>
+                      <p className="text-xs text-gray-500 mt-1">{(file.size / 1024).toFixed(1)} KB</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); clearFile(); }}
+                      className="text-xs text-red-500 hover:text-red-700 font-medium mt-1 hover:underline"
+                    >
+                      Remove file
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className={`p-4 rounded-2xl ${isDragging ? "bg-blue-100" : "bg-gray-100"}`}>
+                      <FaCloudUploadAlt size={32} className={isDragging ? "text-blue-500" : "text-gray-400"} />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm text-gray-700">
+                        <span className="font-semibold text-blue-600">Click to upload</span> or drag and drop
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">CSV files only</p>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* CSV Format Hint + Template */}
+              <div className="mt-4 bg-gray-50 rounded-xl p-4 flex items-start gap-3">
+                <FaInfoCircle className="text-gray-400 mt-0.5 flex-shrink-0" size={14} />
+                <div className="text-xs text-gray-600 flex-1">
+                  <strong className="text-gray-700">Expected CSV columns:</strong>{" "}
+                  <code className="bg-white px-1.5 py-0.5 rounded text-[11px] border border-gray-200">
+                    sku, name, category, cost_price, price, stock_quantity, image_url, original_price, product_url
+                  </code>
+                </div>
+                {templateUrl && (
+                  <a href={templateUrl} download="inventory_template.csv"
+                    className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0">
+                    <FaDownload size={10} /> Template
+                  </a>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-3 mt-5">
+                <button type="button" onClick={doPreview} disabled={!file || loading}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-semibold text-sm hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm">
+                  <FaEye size={14} /> Preview
+                </button>
+                <button type="submit" disabled={!file || loading}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-semibold text-sm hover:from-blue-600 hover:to-indigo-700 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-blue-200">
+                  <FaUpload size={14} /> {loading ? "Uploading..." : "Upload & Restock"}
+                </button>
+
+                {/* Pricing Settings Toggle */}
+                <button type="button" onClick={() => setShowPricing(!showPricing)}
+                  className={`ml-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                    showPricing
+                      ? "bg-indigo-100 text-indigo-700 border border-indigo-200"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}>
+                  <FaSlidersH size={12} /> Pricing
+                </button>
+              </div>
+            </form>
+
+            {/* Messages */}
+            {(message || err) && (
+              <div className="mt-4 space-y-2">
+                {message && (
+                  <div className="p-3.5 text-sm bg-green-50 text-green-800 rounded-xl border border-green-200 flex items-center gap-2">
+                    <FaCheckCircle className="flex-shrink-0" /> {message}
+                  </div>
+                )}
+                {err && (
+                  <div className="p-3.5 text-sm bg-red-50 text-red-700 rounded-xl border border-red-200 flex items-center gap-2">
+                    <FaExclamationTriangle className="flex-shrink-0" /> {err}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Upload + pricing controls */}
-          <div className="lg:col-span-2 bg-gray-50 rounded-lg shadow p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <FaUpload size={20} className="text-green-600" />
-              <h2 className="text-xl font-bold text-green-700">Bulk Inventory Upload</h2>
-            </div>
-
-            <div className="mb-4 p-4 bg-white rounded border">
-              <div className="grid sm:grid-cols-2 gap-4">
+          {/* Collapsible Pricing Controls */}
+          {showPricing && (
+            <div className="border-t border-gray-100 bg-gray-50/50 p-6">
+              <h3 className="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
+                <FaSlidersH size={12} className="text-indigo-500" /> Pricing Configuration
+              </h3>
+              <div className="grid sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Profit Margin (%)</label>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Profit Margin (%)</label>
                   <input
                     type="number" min={0} max={100} value={profitMargin}
                     onChange={(e) => setProfitMargin(+e.target.value)}
-                    className="w-32 px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white"
                   />
-                  <p className="text-xs text-gray-600 mt-1">Used by backend to compute selling price if missing.</p>
+                  <p className="text-[11px] text-gray-400 mt-1">Used by backend to compute selling price if missing</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Preview Strategy</label>
-                  <div className="flex gap-4">
-                    <label className="text-sm flex items-center gap-2">
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Preview Strategy</label>
+                  <div className="flex gap-4 mt-1">
+                    <label className="text-sm flex items-center gap-2 cursor-pointer">
                       <input type="radio" name="strategy" value="AUTO"
-                        checked={strategy === "AUTO"} onChange={() => setStrategy("AUTO")} />
-                      AUTO (margin + loss + add‑on + rounding)
+                        checked={strategy === "AUTO"} onChange={() => setStrategy("AUTO")}
+                        className="accent-blue-500" />
+                      <span className="text-gray-700">AUTO</span>
                     </label>
-                    <label className="text-sm flex items-center gap-2">
+                    <label className="text-sm flex items-center gap-2 cursor-pointer">
                       <input type="radio" name="strategy" value="MARGIN_ONLY"
-                        checked={strategy === "MARGIN_ONLY"} onChange={() => setStrategy("MARGIN_ONLY")} />
-                      Margin‑only
+                        checked={strategy === "MARGIN_ONLY"} onChange={() => setStrategy("MARGIN_ONLY")}
+                        className="accent-blue-500" />
+                      <span className="text-gray-700">Margin-only</span>
                     </label>
                   </div>
                 </div>
@@ -362,151 +460,98 @@ export default function RestockPage() {
               {strategy === "AUTO" && (
                 <div className="mt-4 grid sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Loss Allowance (%)</label>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Loss Allowance (%)</label>
                     <input type="number" min={0} step={0.5} value={lossAllowancePct}
                       onChange={(e) => setLossAllowancePct(+e.target.value)}
-                      className="w-full px-3 py-2 border rounded" />
+                      className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Add‑on (cents)</label>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Add-on (cents)</label>
                     <input type="number" min={0} step={1} value={addOnCents}
                       onChange={(e) => setAddOnCents(+e.target.value)}
-                      className="w-full px-3 py-2 border rounded" />
+                      className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Round up to (RM)</label>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Round up to (RM)</label>
                     <input type="number" min={0.01} step={0.01} value={roundUpTo}
                       onChange={(e) => setRoundUpTo(+e.target.value)}
-                      className="w-full px-3 py-2 border rounded" />
+                      className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white" />
                   </div>
                 </div>
               )}
 
-              <div className="mt-3 text-xs text-gray-600 flex items-start gap-2">
-                <FaInfoCircle className="mt-0.5" />
-                <span>Preview AUTO example: <code>(cost × (1 + margin% + loss%)) + addOn</code>, then round up.</span>
+              <div className="mt-3 text-[11px] text-gray-400 flex items-start gap-2">
+                <FaInfoCircle className="mt-0.5 flex-shrink-0" />
+                <span>AUTO formula: <code className="bg-white px-1 py-0.5 rounded border border-gray-200">(cost × (1 + margin% + loss%)) + addOn</code>, then round up.</span>
               </div>
             </div>
-
-            <form onSubmit={onUpload}>
-              <div className="mb-4">
-                <input ref={fileRef} type="file" accept=".csv" onChange={onFileChange} className="hidden" />
-                <div
-                  onClick={() => fileRef.current?.click()}
-                  onDragOver={onDragOver}
-                  onDragLeave={onDragLeave}
-                  onDrop={onDrop}
-                  className={`flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed rounded cursor-pointer transition ${
-                    isDragging ? "border-green-600 bg-green-50" : "border-gray-300 hover:border-green-500"
-                  }`}
-                >
-                  <FaUpload className={isDragging ? "text-green-600" : "text-gray-500"} />
-                  <div className="text-sm text-gray-700">
-                    <span className="font-semibold text-green-700">Click to upload</span> or drag and drop CSV
-                  </div>
-                  <div className="text-xs text-gray-500">Only .csv files are supported</div>
-                  {file && (
-                    <div className="mt-2 inline-flex items-center gap-2 text-xs bg-white border rounded px-2 py-1">
-                      <span className="text-gray-700">{file.name}</span>
-                      <button type="button" onClick={clearFile} className="text-red-600 hover:underline">Remove</button>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="bg-gray-100 rounded p-3 mb-4 text-xs text-gray-700">
-                <strong>CSV Format:</strong> sku,name,category,cost_price,price,stock_quantity,image_url,original_price,product_url
-                {templateUrl && (
-                  <a href={templateUrl} download="inventory_template.csv"
-                     className="ml-2 inline-flex items-center gap-1 text-green-600 hover:text-green-800">
-                    <FaDownload size={12} /> Download Example
-                  </a>
-                )}
-              </div>
-
-              <div className="flex gap-3">
-                <button type="button" onClick={doPreview} disabled={!file || loading}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed">
-                  <FaEye size={16} /> Preview
-                </button>
-                <button type="submit" disabled={!file || loading}
-                        className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed">
-                  <FaUpload size={16} /> {loading ? "Uploading..." : "Upload & Restock"}
-                </button>
-              </div>
-            </form>
-
-            {(message || err) && (
-              <div className="mt-4">
-                {message && (
-                  <div className="p-3 text-center text-sm bg-green-100 text-green-800 rounded flex items-center justify-center gap-2">
-                    <FaCheckCircle /> {message}
-                  </div>
-                )}
-                {err && (
-                  <div className="mt-2 p-3 text-center text-sm bg-red-100 text-red-700 rounded flex items-center justify-center gap-2">
-                    <FaExclamationTriangle /> {err}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+          )}
         </div>
 
-        {/* Preview table */}
+        {/* Preview Table */}
         {showPreview && preview.length > 0 && (
-          <div className="mt-8 bg-white rounded-lg shadow">
-            <div className="p-6 border-b">
-              <div className="flex items-center gap-2 mb-4">
-                <FaCalculator size={20} className="text-blue-600" />
-                <h3 className="text-lg font-bold text-gray-800">Price Calculation Preview</h3>
-                <span className="text-sm text-gray-600">({preview.length} products)</span>
+          <div className="mt-8 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="p-6 border-b border-gray-100">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="bg-blue-100 p-2 rounded-xl">
+                  <FaCalculator size={16} className="text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-gray-900">Price Calculation Preview</h3>
+                  <p className="text-xs text-gray-500 mt-0.5">{preview.length} products parsed from CSV</p>
+                </div>
               </div>
-              <div className="grid grid-cols-3 gap-4 text-sm">
-                <div className="bg-blue-50 p-3 rounded">
-                  <div className="font-semibold text-blue-800">Total Items</div>
-                  <div className="text-2xl font-bold text-blue-600">
-                    {preview.reduce((s, r) => s + r.quantity, 0)}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl">
+                  <div className="text-xs font-bold text-blue-600 uppercase tracking-wide">Total Items</div>
+                  <div className="text-2xl font-black text-blue-700 mt-1">
+                    {preview.reduce((s, r) => s + r.quantity, 0).toLocaleString()}
                   </div>
                 </div>
-                <div className="bg-green-50 p-3 rounded">
-                  <div className="font-semibold text-green-800">Total Value</div>
-                  <div className="text-2xl font-bold text-green-600">
+                <div className="bg-green-50 border border-green-100 p-4 rounded-xl">
+                  <div className="text-xs font-bold text-green-600 uppercase tracking-wide">Total Value</div>
+                  <div className="text-2xl font-black text-green-700 mt-1">
                     RM {preview.reduce((s, r) => s + r.total_value, 0).toFixed(2)}
                   </div>
                 </div>
-                <div className="bg-purple-50 p-3 rounded">
-                  <div className="font-semibold text-purple-800">Profit Margin (target)</div>
-                  <div className="text-2xl font-bold text-purple-600">{profitMargin}%</div>
+                <div className="bg-purple-50 border border-purple-100 p-4 rounded-xl">
+                  <div className="text-xs font-bold text-purple-600 uppercase tracking-wide">Target Margin</div>
+                  <div className="text-2xl font-black text-purple-700 mt-1">{profitMargin}%</div>
                 </div>
               </div>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="p-3 text-left">Product</th>
-                    <th className="p-3 text-left">Supplier Price</th>
-                    <th className="p-3 text-left">Selling Price</th>
-                    <th className="p-3 text-left">Qty</th>
-                    <th className="p-3 text-left">Total Value</th>
-                    <th className="p-3 text-left">Margin %</th>
-                    <th className="p-3 text-left">Category</th>
-                    <th className="p-3 text-left">Expiry</th>
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-100">
+                    <th className="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Product</th>
+                    <th className="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Cost</th>
+                    <th className="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Sell Price</th>
+                    <th className="px-6 py-3 text-center text-[10px] font-bold text-gray-500 uppercase tracking-wider">Qty</th>
+                    <th className="px-6 py-3 text-right text-[10px] font-bold text-gray-500 uppercase tracking-wider">Total</th>
+                    <th className="px-6 py-3 text-center text-[10px] font-bold text-gray-500 uppercase tracking-wider">Margin</th>
+                    <th className="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Category</th>
+                    <th className="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Expiry</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-gray-50">
                   {preview.map((r, i) => (
-                    <tr key={`${r.product_name}-${i}`} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="p-3 font-medium">{r.product_name}</td>
-                      <td className="p-3 text-gray-600">RM {r.supplier_price.toFixed(2)}</td>
-                      <td className="p-3 text-green-600 font-semibold">RM {r.selling_price.toFixed(2)}</td>
-                      <td className="p-3">{r.quantity}</td>
-                      <td className="p-3 text-green-700 font-bold">RM {r.total_value.toFixed(2)}</td>
-                      <td className="p-3">{r.margin_pct.toFixed(1)}%</td>
-                      <td className="p-3 text-gray-600">{r.category || "-"}</td>
-                      <td className="p-3 text-gray-600">{r.expiry_date}</td>
+                    <tr key={`${r.product_name}-${i}`} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-3 font-medium text-gray-900">{r.product_name}</td>
+                      <td className="px-6 py-3 text-gray-600">RM {r.supplier_price.toFixed(2)}</td>
+                      <td className="px-6 py-3 text-green-600 font-semibold">RM {r.selling_price.toFixed(2)}</td>
+                      <td className="px-6 py-3 text-center">{r.quantity}</td>
+                      <td className="px-6 py-3 text-right font-bold text-gray-900">RM {r.total_value.toFixed(2)}</td>
+                      <td className="px-6 py-3 text-center">
+                        <span className={`inline-flex px-2 py-0.5 rounded-lg text-[10px] font-bold ${
+                          r.margin_pct >= 20 ? "bg-green-100 text-green-700" : r.margin_pct >= 10 ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"
+                        }`}>
+                          {r.margin_pct.toFixed(1)}%
+                        </span>
+                      </td>
+                      <td className="px-6 py-3 text-gray-500 text-xs">{r.category || "—"}</td>
+                      <td className="px-6 py-3 text-gray-500 text-xs">{r.expiry_date || "—"}</td>
                     </tr>
                   ))}
                 </tbody>

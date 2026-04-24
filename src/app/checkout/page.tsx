@@ -6,7 +6,7 @@ import { useCart } from "@/components/context/CartContext";
 import { isAuthenticated, getCurrentUser, getAuthToken } from "@/utils/auth";
 import {
   FaShoppingCart, FaCreditCard, FaMoneyBillWave, FaUniversity,
-  FaMobile, FaMapMarkerAlt, FaTruck, FaClock, FaCheckCircle, FaQrcode
+  FaMobile, FaMapMarkerAlt, FaTruck, FaClock, FaCheckCircle, FaQrcode, FaGift
 } from "react-icons/fa";
 import { Address } from "@/types/address";
 import { loadStripe } from "@stripe/stripe-js";
@@ -60,11 +60,28 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [orderedItems, setOrderedItems] = useState<any[]>([]);
   const [orderTotal, setOrderTotal] = useState(0);
+  const [pointsBalance, setPointsBalance] = useState(0);
+  const [usePoints, setUsePoints] = useState(false);
+  const [availableVouchers, setAvailableVouchers] = useState<any[]>([]);
+  const [selectedVoucherId, setSelectedVoucherId] = useState<number | null>(null);
 
   // total logic to match backend
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shippingFee = subtotal >= 100 ? 0 : 8;
-  const total = subtotal + shippingFee;
+  const initialTotal = subtotal + shippingFee;
+
+  // Points math: 100 points = RM 1.00
+  const maxPointsAvailable = pointsBalance;
+  const maxDiscountValue = maxPointsAvailable / 100;
+  const pointDiscount = usePoints ? Math.min(initialTotal, maxDiscountValue) : 0;
+  const pointsToUse = usePoints ? Math.min(maxPointsAvailable, Math.floor(initialTotal * 100)) : 0;
+
+  // Voucher math
+  const selectedVoucher = availableVouchers.find(v => v.id === selectedVoucherId);
+  const voucherDiscount = selectedVoucher ? selectedVoucher.discountAmount : 0;
+
+  const totalDiscount = Math.min(initialTotal, pointDiscount + voucherDiscount);
+  const total = initialTotal - totalDiscount;
 
   // Normalize API -> UI
   const normalizeAddress = (a: any): Address => ({
@@ -94,6 +111,28 @@ export default function CheckoutPage() {
     if (currentUser) setUser(currentUser);
     setAuthLoading(false);
   }, [router]);
+
+  // Fetch points balance
+  useEffect(() => {
+    if (user?.id) {
+      fetch(`http://localhost:8080/api/points/balance/${user.id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && typeof data.balance === 'number') {
+            setPointsBalance(data.balance);
+          }
+        })
+        .catch(err => console.error("Error fetching points balance:", err));
+
+      // Fetch vouchers
+      fetch(`http://localhost:8080/api/vouchers/my-vouchers?userId=${user.id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) setAvailableVouchers(data);
+        })
+        .catch(err => console.error("Error fetching vouchers:", err));
+    }
+  }, [user]);
 
   // Fetch addresses when entering step 2
   const fetchUserAddresses = async () => {
@@ -170,6 +209,9 @@ export default function CheckoutPage() {
         notes: "",
         paymentMethod,
         paymentDetails: paymentDetailsJson, // From Stripe or TNG Simulation
+        usePoints,
+        pointsToUse,
+        userVoucherId: selectedVoucherId,
       };
 
       const response = await fetch("http://localhost:8080/api/orders", {
@@ -537,6 +579,45 @@ export default function CheckoutPage() {
                     <span>Delivery</span>
                     <span className="font-semibold text-green-600">FREE</span>
                   </div>
+                  
+                  {/* Points Redemption Section */}
+                  <div className="bg-green-50 p-4 rounded-lg border border-green-200 my-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id="redeemPoints"
+                          checked={usePoints}
+                          onChange={(e) => setUsePoints(e.target.checked)}
+                          className="w-4 h-4 text-green-600 rounded cursor-pointer"
+                        />
+                        <label htmlFor="redeemPoints" className="font-bold text-green-800 cursor-pointer">
+                          Redeem Points for Discount
+                        </label>
+                      </div>
+                      <span className="text-sm font-semibold text-green-700">
+                        {pointsBalance} pts available
+                      </span>
+                    </div>
+                    {usePoints && (
+                      <p className="text-sm text-green-600">
+                        Redeeming {pointsToUse} points for RM{pointDiscount.toFixed(2)} discount.
+                      </p>
+                    )}
+                    {!usePoints && (
+                      <p className="text-xs text-green-700">
+                        Convert points at 100 pts = RM 1.00
+                      </p>
+                    )}
+                  </div>
+
+                  {usePoints && pointDiscount > 0 && (
+                    <div className="flex justify-between text-red-600 font-semibold italic">
+                      <span>Points Discount</span>
+                      <span>-RM{pointDiscount.toFixed(2)}</span>
+                    </div>
+                  )}
+
                   <div className="border-t border-gray-300 pt-3">
                     <div className="flex justify-between text-2xl font-bold text-gray-800">
                       <span>Total</span>
@@ -578,11 +659,63 @@ export default function CheckoutPage() {
               </button>
             </div>
 
-            {/* Order Summary (Compact) */}
+            {/* Summary & Discounts */}
             <div className="bg-white rounded-lg shadow p-4 mb-6">
               <h3 className="font-bold text-gray-800 mb-2">Order Total: RM{total.toFixed(2)}</h3>
-              <p className="text-gray-600 text-sm">{cart.length} item{cart.length !== 1 ? 's' : ''}</p>
+              <div className="flex flex-col gap-1 text-sm text-gray-600">
+                <p>{cart.length} item{cart.length !== 1 ? 's' : ''}</p>
+                {pointDiscount > 0 && <p className="text-red-500">- RM{pointDiscount.toFixed(2)} (Points)</p>}
+                {voucherDiscount > 0 && <p className="text-red-500">- RM{voucherDiscount.toFixed(2)} (Voucher)</p>}
+              </div>
             </div>
+
+            {/* Voucher Selection Section */}
+            {availableVouchers.length > 0 && (
+              <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2 mb-4">
+                  <FaGift className="text-orange-500" />
+                  Apply Your Vouchers
+                </h3>
+                <div className="grid grid-cols-1 gap-3">
+                  {availableVouchers.map((v) => (
+                    <div 
+                      key={v.id}
+                      onClick={() => setSelectedVoucherId(selectedVoucherId === v.id ? null : v.id)}
+                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex justify-between items-center ${
+                        selectedVoucherId === v.id 
+                          ? 'border-orange-500 bg-orange-50 shadow-md' 
+                          : 'border-gray-100 hover:border-gray-200 bg-gray-50'
+                      }`}
+                    >
+                      <div>
+                        <div className="font-bold text-gray-800">RM {v.discountAmount.toFixed(2)} Off</div>
+                        <div className="text-xs text-gray-500 font-mono">{v.code}</div>
+                      </div>
+                      {selectedVoucherId === v.id && (
+                        <div className="bg-orange-500 text-white p-1 rounded-full">
+                          <FaCheckCircle size={14} />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Selected Voucher Notification (if any) */}
+            {selectedVoucherId && (
+              <div className="bg-orange-100 border border-orange-200 p-3 rounded-lg mb-6 flex justify-between items-center">
+                <span className="text-orange-800 text-sm font-bold">
+                  ✅ Voucher Applied: RM {voucherDiscount.toFixed(2)} discount!
+                </span>
+                <button 
+                  onClick={() => setSelectedVoucherId(null)}
+                  className="text-xs text-orange-600 underline"
+                >
+                  Remove
+                </button>
+              </div>
+            )}
 
             {/* Shipping Address Selection */}
             <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">

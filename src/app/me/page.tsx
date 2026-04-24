@@ -8,6 +8,7 @@ export default function AccountPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [points, setPoints] = useState(0);
   const [logoutLoading, setLogoutLoading] = useState(false);
 
   useEffect(() => {
@@ -24,6 +25,12 @@ export default function AccountPage() {
     try {
       const parsedUser = JSON.parse(userData);
       setUser(parsedUser);
+      
+      // Fetch points
+      fetch(`http://localhost:8080/api/points/balance/${parsedUser.id}`)
+        .then(res => res.json())
+        .then(data => setPoints(data.balance || 0))
+        .catch(err => console.error("Error fetching points:", err));
     } catch (error) {
       console.error("Error parsing user data:", error);
       localStorage.removeItem("token");
@@ -108,7 +115,7 @@ export default function AccountPage() {
     {
       href: "/points",
       icon: <FaStar size={22} className="text-green-600" />,
-      label: "My Extra Points (0)",
+      label: `My Extra Points (${points})`,
     },
   ];
 

@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   FaShoppingBasket, FaEgg, FaCarrot, FaAppleAlt,
-  FaFish, FaCheese, FaLeaf, FaSearch, FaFilter
+  FaFish, FaCheese, FaLeaf, FaSearch, FaFilter,
+  FaHeart, FaRegHeart
 } from "react-icons/fa";
 import { useCart } from "@/components/context/CartContext";
 
@@ -41,22 +42,67 @@ export default function ProductsPage() {
   const [sort, setSort] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [productsPerPage] = useState(12);
+  const [wishlistIds, setWishlistIds] = useState<number[]>([]);
   const { addToCart } = useCart();
 
   useEffect(() => {
     fetch("http://localhost:8080/api/products")
       .then((res) => res.json())
       .then((data) => {
-        const mapped = data.map((p: Product) => ({
-          ...p,
-          img: p.imageUrl || "/default-image.png", // fallback image for UI
-        }));
-        setAllProducts(mapped);
+        if (Array.isArray(data)) {
+          const mapped = data.map((p: Product) => ({
+            ...p,
+            img: p.imageUrl || "/default-image.png", // fallback image for UI
+          }));
+          setAllProducts(mapped);
+        } else {
+          console.warn("Products fetch returned non-array:", data);
+          setAllProducts([]);
+        }
       })
       .catch((err) => {
         console.error("Error fetching products:", err);
       });
+
+    // Fetch wishlist IDs if logged in
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      const user = JSON.parse(userData);
+      fetch(`http://localhost:8080/api/wishlist/${user.id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            setWishlistIds(data.map((p: any) => p.id));
+          } else {
+            console.warn("Wishlist fetch returned non-array:", data);
+            setWishlistIds([]);
+          }
+        })
+        .catch(err => console.error("Error fetching wishlist:", err));
+    }
   }, []);
+
+  const toggleWishlist = async (productId: number) => {
+    const userData = localStorage.getItem("user");
+    if (!userData) {
+      alert("Please login to use wishlist");
+      return;
+    }
+    const user = JSON.parse(userData);
+    const isInWishlist = wishlistIds.includes(productId);
+
+    try {
+      const method = isInWishlist ? "DELETE" : "POST";
+      const res = await fetch(`http://localhost:8080/api/wishlist/${user.id}/${productId}`, { method });
+      if (res.ok) {
+        setWishlistIds(prev => 
+          isInWishlist ? prev.filter(id => id !== productId) : [...prev, productId]
+        );
+      }
+    } catch (err) {
+      console.error("Error toggling wishlist:", err);
+    }
+  };
 
   // Filter and sort logic
   let filteredProducts = allProducts;
@@ -185,14 +231,24 @@ export default function ProductsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {products.map((prod) => (
             <div key={prod.id} className="group">
-              <div className="bg-white border border-gray-200 rounded-lg p-6 hover:border-black transition-all duration-300 hover:transform hover:scale-105 shadow-sm hover:shadow-lg h-[400px] flex flex-col">
+              <div className="bg-white border border-gray-200 rounded-lg p-6 hover:border-black transition-all duration-300 hover:transform hover:scale-105 shadow-sm hover:shadow-lg h-[400px] flex flex-col relative">
                 <Link href={`/products/${prod.id}`} className="flex flex-col flex-1">
-                  <div className="bg-gray-50 rounded-lg p-4 mb-4 flex items-center justify-center h-[120px]">
+                  <div className="bg-gray-50 rounded-lg p-4 mb-4 flex items-center justify-center h-[120px] relative">
                     <img
                       src={prod.img}
                       alt={prod.name}
                       className="w-20 h-20 object-contain group-hover:scale-110 transition-transform duration-300"
                     />
+                    <button
+                      className="absolute top-2 right-2 p-2 text-gray-400 hover:text-red-500 transition-colors duration-300"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleWishlist(prod.id);
+                      }}
+                    >
+                      {wishlistIds.includes(prod.id) ? <FaHeart size={18} className="text-red-500" /> : <FaRegHeart size={18} />}
+                    </button>
                   </div>
                   <h3 className="font-bold text-black text-lg mb-2 leading-tight flex-1 line-clamp-3">
                     {prod.name}

@@ -3,7 +3,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { FaLeaf, FaEgg, FaCarrot, FaAppleAlt, FaFish, FaCheese, FaShoppingBasket, FaArrowRight, FaTruck, FaClock, FaStar, FaMapMarkerAlt } from "react-icons/fa";
+import { FaLeaf, FaEgg, FaCarrot, FaAppleAlt, FaFish, FaCheese, FaShoppingBasket, FaArrowRight, FaTruck, FaClock, FaStar, FaMapMarkerAlt, FaHeart, FaRegHeart } from "react-icons/fa";
 import { useCart } from "@/components/context/CartContext";
 import { Product } from "@/types";
 
@@ -27,6 +27,7 @@ const benefits = [
 export default function HomePage() {
   const { addToCart } = useCart();
   const [topRated, setTopRated] = useState<Product[]>([]);
+  const [wishlistIds, setWishlistIds] = useState<number[]>([]);
 
   useEffect(() => {
     fetch("http://localhost:8080/api/products/top-rated?limit=4")
@@ -44,7 +45,46 @@ export default function HomePage() {
         console.error("Failed to load top rated products", err);
         setTopRated([]);
       });
+
+    // Fetch wishlist IDs if logged in
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      const user = JSON.parse(userData);
+      fetch(`http://localhost:8080/api/wishlist/${user.id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            setWishlistIds(data.map((p: any) => p.id));
+          } else {
+            console.warn("Wishlist fetch returned non-array:", data);
+            setWishlistIds([]);
+          }
+        })
+        .catch(err => console.error("Error fetching wishlist:", err));
+    }
   }, []);
+
+  const toggleWishlist = async (productId: number) => {
+    const userData = localStorage.getItem("user");
+    if (!userData) {
+      alert("Please login to use wishlist");
+      return;
+    }
+    const user = JSON.parse(userData);
+    const isInWishlist = wishlistIds.includes(productId);
+
+    try {
+      const method = isInWishlist ? "DELETE" : "POST";
+      const res = await fetch(`http://localhost:8080/api/wishlist/${user.id}/${productId}`, { method });
+      if (res.ok) {
+        setWishlistIds(prev => 
+          isInWishlist ? prev.filter(id => id !== productId) : [...prev, productId]
+        );
+      }
+    } catch (err) {
+      console.error("Error toggling wishlist:", err);
+    }
+  };
 
   return (
     <div className="bg-white text-black">
@@ -162,6 +202,16 @@ export default function HomePage() {
                           alt={prod.name} 
                           className="w-full h-full object-contain max-w-20 max-h-20" 
                         />
+                        <button
+                          className="absolute top-0 right-0 p-2 text-gray-400 hover:text-red-500 transition-colors duration-300"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleWishlist(prod.id);
+                          }}
+                        >
+                          {wishlistIds.includes(prod.id) ? <FaHeart size={18} className="text-red-500" /> : <FaRegHeart size={18} />}
+                        </button>
                       </div>
                       <div className="flex items-center gap-1 mb-3">
                         <FaStar size={14} className="text-yellow-400" />

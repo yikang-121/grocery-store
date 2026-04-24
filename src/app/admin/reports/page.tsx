@@ -112,17 +112,13 @@ export default function ReportsPage() {
 
     const loadData = async () => {
         setLoading(true);
-        if (activeTab === "stock") {
-            await fetchStockReport();
-        } else {
-            await fetchSalesReport(date.getFullYear(), date.getMonth() + 1);
-        }
+        await fetchStockReport();
         setLoading(false);
     };
 
     useEffect(() => {
         loadData();
-    }, [activeTab, date]);
+    }, [date]);
 
     const changeMonth = (offset: number) => {
         const next = new Date(date);
@@ -136,9 +132,7 @@ export default function ReportsPage() {
             const y = date.getFullYear();
             const m = date.getMonth() + 1;
 
-            const endpoint = activeTab === "stock"
-                ? `http://localhost:8080/api/admin/reports/export/stock/${format}`
-                : `http://localhost:8080/api/admin/reports/export/${format}?year=${y}&month=${m}`;
+            const endpoint = `http://localhost:8080/api/admin/reports/export/stock/${format}`;
 
             const res = await fetch(endpoint);
             if (!res.ok) throw new Error("Export failed");
@@ -150,7 +144,7 @@ export default function ReportsPage() {
 
             const contentDisposition = res.headers.get("Content-Disposition");
             const match = contentDisposition?.match(/filename="?([^"]+)"?/);
-            const defaultFilename = activeTab === "stock" ? `Stock_Report.${format}` : `Financial_Report.${format}`;
+            const defaultFilename = `Stock_Report.${format}`;
             a.download = match ? match[1] : defaultFilename;
 
             document.body.appendChild(a);
@@ -177,21 +171,11 @@ export default function ReportsPage() {
                             <FaArrowLeft size={10} /> Back to Dashboard
                         </Link>
                         <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase">
-                            Stock Out & Sales Report
+                            Stock Out & Movement Report
                         </h1>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3">
-                        {activeTab === "sales" && (
-                            <div className="flex items-center bg-white rounded-2xl shadow-sm border border-slate-200 p-1 mr-2">
-                                <button onClick={() => changeMonth(-1)} className="p-2 hover:bg-slate-50 rounded-xl transition text-slate-400 hover:text-indigo-600">&larr;</button>
-                                <div className="px-4 font-bold text-slate-700 min-w-[140px] text-center text-sm">
-                                    {date.toLocaleDateString("en-MY", { month: "long", year: "numeric" })}
-                                </div>
-                                <button onClick={() => changeMonth(1)} className="p-2 hover:bg-slate-50 rounded-xl transition text-slate-400 hover:text-indigo-600">&rarr;</button>
-                            </div>
-                        )}
-
                         <button
                             onClick={() => handleDownload("csv")}
                             disabled={downloading !== null || loading}
@@ -211,29 +195,12 @@ export default function ReportsPage() {
                     </div>
                 </div>
 
-                {/* Tabs */}
-                <div className="flex p-1.5 bg-slate-200/50 rounded-2xl w-fit mb-8">
-                    <button
-                        onClick={() => setActiveTab("sales")}
-                        className={`px-8 py-2.5 rounded-xl text-sm font-black transition-all duration-300 uppercase tracking-wider ${activeTab === 'sales' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'text-slate-500 hover:text-slate-700'}`}
-                    >
-                        Sales Report
-                    </button>
-                    <button
-                        onClick={() => setActiveTab("stock")}
-                        className={`px-8 py-2.5 rounded-xl text-sm font-black transition-all duration-300 uppercase tracking-wider ${activeTab === 'stock' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'text-slate-500 hover:text-slate-700'}`}
-                    >
-                        Stock Report
-                    </button>
-                </div>
-
+                {/* Tabs removed to simplify to just Stock Report */}
                 {loading ? (
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6 animate-pulse">
                         {[1, 2, 3, 4].map(i => <div key={i} className="h-32 bg-slate-200 rounded-3xl"></div>)}
                         <div className="md:col-span-4 h-96 bg-slate-200 rounded-3xl"></div>
                     </div>
-                ) : activeTab === "sales" ? (
-                    salesData && <SalesReportContent data={salesData} formatCurrency={formatCurrency} />
                 ) : (
                     stockData && <StockReportContent data={stockData} formatCurrency={formatCurrency} />
                 )}
