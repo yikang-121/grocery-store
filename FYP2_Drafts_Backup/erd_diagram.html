@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full System Entity Relationship Diagram</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+        }
+        h1 { font-size: 26px; font-weight: 800; margin-bottom: 5px; }
+        .subtitle { font-size: 13px; color: #666; margin-bottom: 15px; }
+
+        .erd-canvas {
+            position: relative;
+            width: 1750px;
+            height: 1100px;
+            border: 4px solid #000;
+            background: #fff;
+        }
+
+        /* Entity Box */
+        .entity {
+            position: absolute;
+            border: 2.5px solid #000;
+            background: #fff;
+            font-size: 12px;
+            z-index: 2;
+        }
+        .entity-header {
+            background: #ddddf8;
+            border-bottom: 2.5px solid #000;
+            padding: 6px 10px;
+            font-weight: 800;
+            font-size: 13px;
+            text-align: center;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+        .entity-row {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            padding: 3px 6px;
+        }
+        .entity-row:last-child { border-bottom: none; }
+        .col-type { width: 58px; color: #5555aa; font-weight: 600; font-size: 11px; }
+        .col-name { flex: 1; font-weight: 600; font-size: 11px; }
+        .col-key { width: 24px; text-align: right; font-weight: 800; font-size: 10px; color: #cc2222; }
+
+        /* SVG Lines Layer */
+        .lines-layer {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .rel-line { stroke: #000; stroke-width: 1.8; fill: none; }
+        .rel-dash { stroke: #000; stroke-width: 1.8; fill: none; stroke-dasharray: 6,4; }
+        .card {
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            font-weight: 800;
+            fill: #000;
+        }
+        .rel-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 10px;
+            font-weight: 600;
+            fill: #555;
+        }
+
+        .footer {
+            margin-top: 12px;
+            font-size: 12px;
+            color: #888;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Full System Entity Relationship Diagram</h1>
+<div class="subtitle">Verified from Source Code | 16 Core Entities | Landscape Orientation</div>
+
+<div class="erd-canvas">
+
+    <svg class="lines-layer" viewBox="0 0 1750 1100">
+        <!-- ====== USER side relationships ====== -->
+        <!-- USER -> USER_ADDRESS (straight down-left) -->
+        <polyline class="rel-line" points="130,195 130,260 55,260 55,300" />
+        <text class="card" x="118" y="225">1</text><text class="card" x="40" y="295">*</text>
+
+        <!-- USER -> POINT_HISTORY (straight down) -->
+        <polyline class="rel-line" points="200,195 200,300" />
+        <text class="card" x="188" y="220">1</text><text class="card" x="188" y="295">*</text>
+
+        <!-- USER -> LOYALTY_POINT (down-right) -->
+        <polyline class="rel-line" points="270,195 340,300" />
+        <text class="card" x="262" y="220">1</text><text class="card" x="330" y="295">1</text>
+
+        <!-- USER -> USER_VOUCHER (down further left) -->
+        <polyline class="rel-line" points="100,195 100,240 35,240 35,490" />
+        <text class="card" x="88" y="220">1</text><text class="card" x="20" y="485">*</text>
+
+        <!-- USER -> WISHLIST (right side, down to row 3) -->
+        <polyline class="rel-line" points="310,165 450,165 450,300" />
+        <text class="card" x="320" y="160">1</text><text class="card" x="438" y="295">*</text>
+
+        <!-- USER -> ORDER (down to Row 3) -->
+        <polyline class="rel-line" points="200,195 200,240 240,240 240,490" />
+        <text class="card" x="228" y="250">1</text><text class="card" x="228" y="485">*</text>
+
+        <!-- ====== ORDER side relationships ====== -->
+        <!-- ORDER -> ORDER_ITEM (straight down) -->
+        <polyline class="rel-line" points="280,720 280,770" />
+        <text class="card" x="265" y="740">1</text><text class="card" x="265" y="768">*</text>
+
+        <!-- ORDER -> PAYMENT (left from order down) -->
+        <polyline class="rel-line" points="170,720 170,770" />
+        <text class="card" x="155" y="740">1</text><text class="card" x="155" y="768">1</text>
+
+        <!-- ORDER_ITEM -> PRODUCT (right across to Product column) -->
+        <polyline class="rel-line" points="400,850 700,850 700,195" />
+        <text class="card" x="405" y="845">*</text><text class="card" x="688" y="210">1</text>
+
+        <!-- ====== PRODUCT side relationships ====== -->
+        <!-- PRODUCT -> BATCH (straight down) -->
+        <polyline class="rel-line" points="780,195 780,260 920,260 920,300" />
+        <text class="card" x="770" y="220">1</text><text class="card" x="908" y="295">*</text>
+
+        <!-- PRODUCT -> INVENTORY_METRICS (right, down) -->
+        <polyline class="rel-line" points="850,165 1150,165 1150,300" />
+        <text class="card" x="860" y="160">1</text><text class="card" x="1138" y="295">*</text>
+
+        <!-- PRODUCT -> STOCK_MOVEMENT (down to row 3) -->
+        <polyline class="rel-line" points="730,195 730,240 630,240 630,490" />
+        <text class="card" x="718" y="225">1</text><text class="card" x="618" y="485">*</text>
+
+        <!-- PRODUCT -> SPOILAGE_LOG (down to row 3 right) -->
+        <polyline class="rel-line" points="810,195 810,250 870,250 870,490" />
+        <text class="card" x="800" y="225">1</text><text class="card" x="858" y="485">*</text>
+
+        <!-- PRODUCT -> PURCHASE_ORDER_ITEM -->
+        <polyline class="rel-line" points="850,130 1400,130 1400,300" />
+        <text class="card" x="860" y="125">1</text><text class="card" x="1388" y="295">*</text>
+
+        <!-- PRODUCT -> WISHLIST -->
+        <polyline class="rel-line" points="700,105 500,105 500,300" />
+        <text class="card" x="690" y="100">1</text><text class="card" x="488" y="295">*</text>
+
+        <!-- ====== BATCH relationships ====== -->
+        <!-- BATCH -> STOCK_MOVEMENT -->
+        <polyline class="rel-line" points="920,490 920,530 670,530 670,490" />
+        <text class="card" x="925" y="500">1</text><text class="card" x="674" y="500">*</text>
+
+        <!-- BATCH -> SPOILAGE_LOG -->
+        <polyline class="rel-line" points="1000,490 1000,530 910,530 910,490" />
+        <text class="card" x="1005" y="505">1</text><text class="card" x="915" y="505">*</text>
+
+        <!-- ====== PURCHASE_ORDER -> PURCHASE_ORDER_ITEM ====== -->
+        <polyline class="rel-line" points="1500,490 1500,530 1450,530 1450,490" />
+        <text class="card" x="1505" y="505">1</text><text class="card" x="1438" y="505">*</text>
+
+    </svg>
+
+    <!-- ==================== ROW 1 (y=50): USER & PRODUCT ==================== -->
+    <!-- USER -->
+    <div class="entity" style="left: 80px; top: 50px; width: 240px;">
+        <div class="entity-header">USER</div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">email</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">password</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">name</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">role</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">datetime</span><span class="col-name">created_at</span><span class="col-key"></span></div>
+    </div>
+
+    <!-- PRODUCT -->
+    <div class="entity" style="left: 680px; top: 50px; width: 220px;">
+        <div class="entity-header">PRODUCT</div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">name</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">sku</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">category</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">decimal</span><span class="col-name">price</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">decimal</span><span class="col-name">costPrice</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">int</span><span class="col-name">stockQuantity</span><span class="col-key"></span></div>
+    </div>
+
+    <!-- ==================== ROW 2 (y=300): Children of USER & PRODUCT ==================== -->
+    <!-- USER_ADDRESS -->
+    <div class="entity" style="left: 10px; top: 300px; width: 170px;">
+        <div class="entity-header">USER_ADDRESS</div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">userId</span><span class="col-key">FK</span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">label</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">addressLine</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">city</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">state</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">postal</span><span class="col-key"></span></div>
+    </div>
+
+    <!-- POINT_HISTORY -->
+    <div class="entity" style="left: 190px; top: 300px; width: 170px;">
+        <div class="entity-header">POINT_HISTORY</div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">userId</span><span class="col-key">FK</span></div>
+        <div class="entity-row"><span class="col-type">int</span><span class="col-name">amount</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">type</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">description</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">datetime</span><span class="col-name">createdAt</span><span class="col-key"></span></div>
+    </div>
+
+    <!-- LOYALTY_POINT -->
+    <div class="entity" style="left: 310px; top: 300px; width: 150px;">
+        <div class="entity-header">LOYALTY_POINT</div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">userId</span><span class="col-key">FK</span></div>
+        <div class="entity-row"><span class="col-type">int</span><span class="col-name">balance</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">datetime</span><span class="col-name">updatedAt</span><span class="col-key"></span></div>
+    </div>
+
+    <!-- WISHLIST -->
+    <div class="entity" style="left: 440px; top: 300px; width: 150px;">
+        <div class="entity-header">WISHLIST</div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">userId</span><span class="col-key">FK</span></div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">productId</span><span class="col-key">FK</span></div>
+        <div class="entity-row"><span class="col-type">datetime</span><span class="col-name">createdAt</span><span class="col-key"></span></div>
+    </div>
+
+    <!-- BATCH -->
+    <div class="entity" style="left: 860px; top: 300px; width: 200px;">
+        <div class="entity-header">BATCH</div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">productId</span><span class="col-key">FK</span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">batchNo</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">date</span><span class="col-name">expiryDate</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">int</span><span class="col-name">availableQuantity</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">datetime</span><span class="col-name">createdAt</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">datetime</span><span class="col-name">updatedAt</span><span class="col-key"></span></div>
+    </div>
+
+    <!-- INVENTORY_METRICS -->
+    <div class="entity" style="left: 1080px; top: 300px; width: 200px;">
+        <div class="entity-header">INVENTORY_METRICS</div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">skuId</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">int</span><span class="col-name">currentStock</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">int</span><span class="col-name">leadTimeDays</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">int</span><span class="col-name">shelfLifeDays</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">double</span><span class="col-name">wasteLambda</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">double</span><span class="col-name">avgSales30d</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">double</span><span class="col-name">stdDev30d</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">double</span><span class="col-name">seasonalityFactor</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">int</span><span class="col-name">incomingStock</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">int</span><span class="col-name">caseSize</span><span class="col-key"></span></div>
+    </div>
+
+    <!-- PURCHASE_ORDER_ITEM -->
+    <div class="entity" style="left: 1350px; top: 300px; width: 200px;">
+        <div class="entity-header">PURCHASE_ORDER_ITEM</div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">purchaseOrderId</span><span class="col-key">FK</span></div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">productId</span><span class="col-key">FK</span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">sku</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">productName</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">int</span><span class="col-name">quantityOrdered</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">int</span><span class="col-name">quantityReceived</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">decimal</span><span class="col-name">unitCost</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">decimal</span><span class="col-name">lineTotal</span><span class="col-key"></span></div>
+    </div>
+
+    <!-- ==================== ROW 3 (y=490): ==================== -->
+    <!-- USER_VOUCHER (far left) -->
+    <div class="entity" style="left: 10px; top: 490px; width: 170px;">
+        <div class="entity-header">USER_VOUCHER</div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">userId</span><span class="col-key">FK</span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">code</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">decimal</span><span class="col-name">discountAmount</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">boolean</span><span class="col-name">isUsed</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">datetime</span><span class="col-name">expiryAt</span><span class="col-key"></span></div>
+    </div>
+
+    <!-- ORDER -->
+    <div class="entity" style="left: 190px; top: 490px; width: 220px;">
+        <div class="entity-header">ORDER</div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">orderNo</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">userId</span><span class="col-key">FK</span></div>
+        <div class="entity-row"><span class="col-type">decimal</span><span class="col-name">subtotal</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">decimal</span><span class="col-name">shippingFee</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">decimal</span><span class="col-name">discount</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">decimal</span><span class="col-name">total_amount</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">status</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">paymentMethod</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">cancelReason</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">datetime</span><span class="col-name">createdAt</span><span class="col-key"></span></div>
+    </div>
+
+    <!-- STOCK_MOVEMENT -->
+    <div class="entity" style="left: 590px; top: 490px; width: 200px;">
+        <div class="entity-header">STOCK_MOVEMENT</div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">productId</span><span class="col-key">FK</span></div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">batchId</span><span class="col-key">FK</span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">movementType</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">int</span><span class="col-name">quantity</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">referenceType</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">referenceId</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">notes</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">datetime</span><span class="col-name">createdAt</span><span class="col-key"></span></div>
+    </div>
+
+    <!-- SPOILAGE_LOG -->
+    <div class="entity" style="left: 820px; top: 490px; width: 200px;">
+        <div class="entity-header">SPOILAGE_LOG</div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">productId</span><span class="col-key">FK</span></div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">batchId</span><span class="col-key">FK</span></div>
+        <div class="entity-row"><span class="col-type">int</span><span class="col-name">quantity</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">decimal</span><span class="col-name">costPrice</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">decimal</span><span class="col-name">totalLoss</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">reason</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">datetime</span><span class="col-name">createdAt</span><span class="col-key"></span></div>
+    </div>
+
+    <!-- PURCHASE_ORDER -->
+    <div class="entity" style="left: 1420px; top: 540px; width: 200px;">
+        <div class="entity-header">PURCHASE_ORDER</div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">poNumber</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">supplierName</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">status</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">decimal</span><span class="col-name">totalCost</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">decimal</span><span class="col-name">taxAmount</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">notes</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">datetime</span><span class="col-name">createdAt</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">datetime</span><span class="col-name">approvedAt</span><span class="col-key"></span></div>
+    </div>
+
+    <!-- ==================== ROW 4 (y=770): Bottom row ==================== -->
+    <!-- PAYMENT -->
+    <div class="entity" style="left: 80px; top: 770px; width: 180px;">
+        <div class="entity-header">PAYMENT</div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">orderId</span><span class="col-key">FK</span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">providerRef</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">decimal</span><span class="col-name">amount</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">status</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">method</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">datetime</span><span class="col-name">createdAt</span><span class="col-key"></span></div>
+    </div>
+
+    <!-- ORDER_ITEM -->
+    <div class="entity" style="left: 280px; top: 770px; width: 200px;">
+        <div class="entity-header">ORDER_ITEM</div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">orderId</span><span class="col-key">FK</span></div>
+        <div class="entity-row"><span class="col-type">long</span><span class="col-name">productId</span><span class="col-key">FK</span></div>
+        <div class="entity-row"><span class="col-type">string</span><span class="col-name">productName</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">decimal</span><span class="col-name">unitPrice</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">int</span><span class="col-name">quantity</span><span class="col-key"></span></div>
+        <div class="entity-row"><span class="col-type">decimal</span><span class="col-name">lineTotal</span><span class="col-key"></span></div>
+    </div>
+
+</div>
+
+<div class="footer">Verified Implementation Schema | Hand-Positioned Zero-Overlap Layout</div>
+
+</body>
+</html>

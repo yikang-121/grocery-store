@@ -3,21 +3,26 @@
 This chapter details the deployment and operational aspects of the E-Commerce Website and Inventory System. It covers the hardware and software setups used during development, system configurations, and a comprehensive walkthrough of the system’s operations accompanied by screenshots. Furthermore, the challenges encountered during Sprints 1 to 12 are documented along with their respective solutions.
 
 ## 5.1 Hardware Setup
-The development of both the frontend and backend components, as well as the local hosting of the database, was carried out on a personal laptop. The hardware specifications are as follows:
-*   **Model:** Acer Nitro 5 AN515-45
-*   **Processor:** AMD Ryzen 5 5600H
-*   **Memory (RAM):** 16GB DDR5
-*   **Storage:** 512GB NVMe SSD
-This hardware configuration provided sufficient processing power and memory to seamlessly run the Next.js development server, the Spring Boot application, and the MySQL database concurrently without performance degradation.
+The development and local hosting of the full-stack system were performed on a high-performance development machine to ensure stability during concurrent execution of the frontend, backend, and database services. The hardware specifications are detailed below:
+*   **System Model:** Acer Nitro 5 (AN515-45 Series)
+*   **Central Processing Unit (CPU):** AMD Ryzen 5 5600H with Radeon Graphics (6 Cores, 12 Threads)
+*   **Memory (RAM):** 16GB DDR4 (Upgraded for virtualization and development overhead)
+*   **Primary Storage:** 512GB NVMe M.2 SSD (High-speed I/O for database transactions)
+*   **Display:** 15.6" Full HD (1920 x 1080) for multi-window development
+
+This environment provided the necessary throughput to run the Next.js (Node.js) runtime, the Spring Boot (JVM) container, and the MySQL relational engine simultaneously, ensuring a responsive development and testing lifecycle.
 
 ## 5.2 Software Setup
-The system follows a modern full-stack architecture. The primary software tools and frameworks utilized include:
-*   **Backend:** Java 17+, Spring Boot 3.x, Maven (Dependancy Management)
-*   **Frontend:** Node.js 18+, npm, Next.js 14, React
-*   **Database:** MySQL 8.x
-*   **Integrated Development Environments (IDEs):** IntelliJ IDEA (for Backend), Visual Studio Code / Cursor (for Frontend)
-*   **Database Management:** MySQL Workbench
-*   **Version Control:** Git and GitHub
+The system leverages a modern technology stack designed for scalability and maintainability. The software dependencies and development environments used include:
+*   **Backend Framework:** Java 17 (OpenJDK), Spring Boot 3.2.x, Maven 3.9 (Dependency and Build Management)
+*   **Frontend Framework:** Node.js 18.x, Next.js 14.x (App Router), React 18, Tailwind CSS (Styling)
+*   **Database Engine:** MySQL 8.0 Community Server (Relational storage with ACID compliance)
+*   **Development Tools:**
+    *   **IntelliJ IDEA Ultimate:** Primary IDE for Spring Boot and Java development.
+    *   **VS Code / Cursor:** Primary editors for Next.js and frontend component design.
+    *   **MySQL Workbench:** For schema design, ERD generation, and data inspection.
+    *   **Postman:** For RESTful API endpoint testing and JSON payload verification.
+*   **Version Control:** Git 2.x, hosted on GitHub for repository management and history tracking.
 
 ## 5.3 Setting and Configuration
 To ensure smooth communication between the decoupled frontend and backend, and to secure the application, several configurations were established:
@@ -75,9 +80,6 @@ Each product can have multiple batches, with the quantity and expiry date clearl
 > **[Insert Screenshot Here: Cleanup Expired Confirmation]**
 > *Figure 5.4.4.4: The system alert confirming the bulk movement of expired batches to the spoilage log.*
 
-### 5.4.5 Customer Checkout & FEFO Deduction Module
-When a customer confirms an order, the system handles the checkout process. Crucially, as part of this process, the backend evaluates the required product quantity against available inventory batches. The system implements FEFO (First Expired, First Out) logic by automatically deducting stock from the batch with the nearest expiry date. If an order quantity exceeds the first batch, the system seamlessly spills the remaining deduction over to the next expiring batch.
-
 > **[Insert Screenshot Here: Checkout Page / Order Confirmation]**
 > *Figure 5.4.5.1: The customer completing the checkout process.*
 
@@ -86,6 +88,9 @@ When a customer confirms an order, the system handles the checkout process. Cruc
 
 > **[Insert Screenshot Here: Admin Inventory Batches (After Order)]**
 > *Figure 5.4.5.3: The updated quantity showing stock was correctly deducted from the earliest expiring batch (FEFO logic success).*
+
+**Operational Narrative:**
+The FEFO execution is managed by the `InventoryService` in the backend. When the customer confirms an order (Figure 5.4.5.1), the system does not simply decrement a global stock counter. Instead, it retrieves all active batches for the product, sorted by `expiry_date ASC`. As seen in Figure 5.4.5.2, Batch A (Exp: 2026-05-01) has 10 units and Batch B (Exp: 2026-06-01) has 20 units. If the customer orders 15 units, the system first exhausts all 10 units from Batch A and then "spills over" to deduct the remaining 5 units from Batch B. Figure 5.4.5.3 shows the result: Batch A is moved to 0 (and later archived/hidden), while Batch B is updated to 15 units. This ensures the grocer always ships the oldest sellable stock first.
 
 ### 5.4.6 Spoilage Logging and Stock Module
 To ensure complete transparency and proactive inventory management, the stock auditing functionalities are divided into two distinct views: Stock Movements and Stock Reports.
@@ -116,6 +121,9 @@ Crucially, the adaptive algorithm incorporates a "Spoilage Prevented" cap to ens
 > **[Insert Screenshot Here: Expanded Internal Metrics Card]**
 > *Figure 5.4.7.2: A detailed breakdown of the adaptive algorithm's internal metrics and spoilage prevention capping.*
 
+**Technical Workflow:**
+As demonstrated in Figure 5.4.7.1, the system highlights a "Net Requirement" for products trending upwards in sales. For instance, if a product shows a 25% momentum (demand growth), the algorithm increases the target stock. However, as shown in the internal metrics (Figure 5.4.7.2), if the calculated target stock exceeds the "Max Sellable Quantity" (calculated as `Adjusted Demand * Shelf Life`), the system caps the order to prevent spoilage. The "Decay Factor" further adjusts the order based on the waste lambda, ensuring that the grocer is protected against holding too much highly-perishable inventory.
+
 #### 5.4.7.2 Financial and Accounting Dashboard
 The financial portion of the module consists of an extensive Accounting Dashboard that focuses heavily on revenue tracking, tax compliance, and business health. The dashboard is divided into three primary tabs: Profit & Loss, Invoices, and Purchase Orders.
 
@@ -135,16 +143,175 @@ The **Purchase Orders** tab logs all restocking actions, differentiating between
 > **[Insert Screenshot Here: Invoice Lookup]**
 > *Figure 5.4.7.6: Detailed invoice view, calculating subtotal and SST tax.*
 
-## 5.5 Implementation Issues and Challenges
+## 5.5 Algorithm Implementation
+
+This section documents the core algorithms that distinguish this system from conventional inventory platforms. Three algorithms are implemented in the Spring Boot backend: the **FEFO Batch Deduction Algorithm**, the **Adaptive Restocking Algorithm**, and the **Baseline (Static ROP) Restocking Algorithm**. The adaptive algorithm is compared against the baseline on the admin dashboard to demonstrate its superiority in reducing waste and preventing stockouts.
+
+### 5.5.1 FEFO Batch Deduction Algorithm
+
+The First-Expiry, First-Out (FEFO) deduction algorithm ensures that when a customer places an order, stock is always consumed from the batch closest to expiration. This minimizes spoilage by prioritising the sale of older inventory. The algorithm is implemented in the `InventoryService.deductStockFEFO()` method.
+
+**Algorithm Logic:**
+
+```
+FUNCTION deductStockFEFO(productId, quantityRequired):
+    batches ← GET all active batches for productId
+                WHERE expiryDate >= today
+                ORDER BY expiryDate ASC       // Earliest expiry first
+
+    totalAvailable ← SUM(batch.availableQuantity for each batch)
+    IF totalAvailable < quantityRequired THEN
+        THROW InsufficientStockException
+
+    remainingDeduction ← quantityRequired
+    FOR EACH batch IN batches:
+        deductAmount ← MIN(batch.availableQuantity, remainingDeduction)
+        batch.availableQuantity ← batch.availableQuantity - deductAmount
+        UPDATE batch in database
+        remainingDeduction ← remainingDeduction - deductAmount
+        IF remainingDeduction == 0 THEN BREAK
+
+    DECREMENT product.stockQuantity by quantityRequired
+    LOG stock movement as "ORDER_DEDUCT"
+    TRIGGER real-time restock check
+END FUNCTION
+```
+
+**Key Design Decisions:**
+*   **Greedy Sequential Deduction:** The algorithm iterates through batches sorted by ascending expiry date. It fully exhausts each batch before moving to the next, ensuring that the oldest stock is always sold first.
+*   **Spill-Over Logic:** If an order quantity exceeds a single batch (e.g., ordering 15 units when Batch A only has 10), the algorithm automatically "spills over" to the next batch (deducting 5 from Batch B), maintaining per-batch accuracy.
+*   **Transactional Safety:** The method is wrapped with Spring's `@Transactional` annotation, ensuring that if any step fails (e.g., a database update error), all preceding changes are rolled back, preventing data inconsistencies.
+*   **Event-Driven Restocking:** After every successful deduction, the algorithm triggers `purchaseOrderService.triggerRealTimeRestock()` to check if the product has fallen below its safety stock threshold, enabling proactive replenishment.
+
+### 5.5.2 Adaptive Restocking Algorithm
+
+The adaptive restocking algorithm is implemented in `RestockOptimizer.calculateRestock()`. Unlike traditional static Reorder Point (ROP) methods, this algorithm dynamically adjusts its recommendations based on demand momentum, sales volatility, seasonality, and perishability decay. It is designed to prevent both stockouts and over-ordering of perishable goods.
+
+**Mathematical Formulation:**
+
+**Step A — Demand Momentum (M):**
+
+```
+M = (Short_Term_Avg_3d - Long_Term_Avg_30d) / Long_Term_Avg_30d
+```
+
+Momentum captures whether demand is trending upward (M > 0) or downward (M < 0), allowing the algorithm to react to real-time sales surges.
+
+**Step B — Adjusted Demand (D_adj):**
+
+```
+D_adj = Long_Term_Avg * (1 + β * M) * Seasonality_Factor
+```
+
+Where β (Beta) = 0.8 is a sensitivity coefficient controlling how aggressively the algorithm reacts to short-term trends, and Seasonality_Factor accounts for periodic demand fluctuations.
+
+**Step C — Volatility-Adjusted Safety Stock (SS):**
+
+```
+CV = σ / Long_Term_Avg           (Coefficient of Variation)
+Z_dynamic = Z_base * (1 + CV)     (Dynamic service-level Z-score)
+SS = Z_dynamic * σ * √(Lead_Time)
+```
+
+Where Z_base = 1.65 (corresponding to a 95% service level) and σ is the 30-day standard deviation. Unlike static safety stock models, the dynamic Z-score increases the buffer when demand is highly volatile (high CV), providing stronger protection against stockouts.
+
+**Step D — Perishability Cap:**
+
+```
+Max_Sellable_Qty = D_adj * Shelf_Life_Days
+Safe_Target_Stock = MIN(Target_Stock, Max_Sellable_Qty)
+```
+
+This cap ensures the system never orders more than what can realistically be sold before the product expires, directly preventing over-ordering of perishable goods.
+
+**Step E — Exponential Decay Factor:**
+
+```
+Decay_Factor = e^(-λ * Shelf_Life)
+Raw_Order_Qty = Net_Requirement * Decay_Factor
+```
+
+Where λ (Lambda) is the historical waste rate. For highly perishable products with a high lambda, the decay factor significantly reduces the order quantity, accounting for the expected spoilage loss.
+
+**Step F — Final Constraints:**
+
+```
+Final_Order_Qty = CEIL(Raw_Order_Qty)
+Final_Order_Qty = ROUND_UP_TO(Case_Size)
+IF Final_Order_Qty < Supplier_MOQ THEN Final_Order_Qty = Supplier_MOQ
+```
+
+The final quantity is rounded up to the nearest case size and enforced against the supplier's Minimum Order Quantity (MOQ).
+
+**Algorithm Pseudocode:**
+
+```
+FUNCTION calculateRestock(metrics):
+    // A. Demand Momentum
+    momentum ← (avgSales3d - avgSales30d) / avgSales30d
+
+    // B. Adjusted Demand
+    adjustedDemand ← avgSales30d * (1 + 0.8 * momentum) * seasonalityFactor
+
+    // C. Volatility Safety Stock
+    cv ← stdDev30d / avgSales30d
+    dynamicZ ← 1.65 * (1 + cv)
+    safetyStock ← dynamicZ * stdDev30d * SQRT(leadTimeDays)
+
+    // D. Perishability Cap
+    maxSellable ← adjustedDemand * shelfLifeDays
+    targetStock ← (adjustedDemand * reviewPeriod) + safetyStock
+    safeTarget ← MIN(targetStock, maxSellable)
+
+    // E. Decay & Net Requirement
+    netRequirement ← safeTarget - (currentStock + incomingStock)
+    decayFactor ← EXP(-wasteLambda * shelfLifeDays)
+    rawOrderQty ← netRequirement * decayFactor
+
+    // F. Constraints
+    finalQty ← CEIL(rawOrderQty)
+    finalQty ← ROUND_UP_TO_CASE_SIZE(finalQty)
+    IF finalQty < supplierMOQ THEN finalQty ← supplierMOQ
+
+    RETURN finalQty
+END FUNCTION
+```
+
+### 5.5.3 Baseline (Static ROP) Restocking Algorithm
+
+The baseline algorithm, implemented in `BaselineRestockOptimizer.calculateBaseline()`, serves as a **control model** against which the adaptive algorithm is evaluated. It uses the traditional Reorder Point (ROP) formula with static parameters.
+
+**Key Differences from the Adaptive Algorithm:**
+
+| Feature | Baseline (Static ROP) | Adaptive Algorithm |
+|---|---|---|
+| Demand Forecast | Uses only 30-day average (no momentum) | Incorporates 3-day vs 30-day momentum |
+| Safety Stock Z-score | Static Z = 1.65 | Dynamic Z = 1.65 × (1 + CV) |
+| Seasonality | Not considered (factor = 1.0) | Multiplicative seasonality factor |
+| Perishability Cap | Not applied | Max Sellable Qty caps target stock |
+| Decay Factor | Set to 1.0 (no decay) | Exponential decay e^(-λ × ShelfLife) |
+| Incoming Stock | Not subtracted | Subtracted from net requirement |
+
+**Baseline Formula:**
+
+```
+Target_Stock = (Avg_Sales_30d * Review_Period) + (1.65 * σ * √Lead_Time)
+Net_Requirement = Target_Stock - Current_Stock
+Order_Qty = CEIL(Net_Requirement)
+```
+
+By comparing both algorithms side-by-side on the Algorithm Evaluation Dashboard (Section 5.4.7.1), administrators can objectively verify that the adaptive algorithm produces more accurate and waste-conscious restocking recommendations than the static baseline.
+
+## 5.6 Implementation Issues and Challenges
 Throughout Sprints 1 to 12, several technical challenges were encountered and resolved. The following table summarizes the most significant issues:
 
 | Issue | Phase | Solution Implemented |
 |---|---|---|
-| **CORS Errors** | Sprint 2 | The Next.js frontend was blocked from communicating with the Spring Boot backend. Resolved by configuring `@CrossOrigin` and global CORS mappings in Spring Boot to explicitly allow the `localhost:3000` origin. |
-| **CSV Validation Failures** | Sprint 5 | Initial bulk uploads failed entirely if a single row was malformed. Re-engineered the parsing logic to implement row-level validation, allowing valid rows to pass while highlighting problematic rows to the admin. |
-| **FEFO Batch Spill-Over** | Sprint 7-8 | Deducting stock when an order quantity exceeded the nearest-expiry batch caused negative stock errors. Implemented a recursive/looping deduction algorithm in the `OrderService` to elegantly spill over to subsequent batches. |
-| **Stock Sync Discrepancies** | Sprint 9 | Concurrency issues occurred when an order checkout and a spoilage log happened simultaneously. Applied Spring Boot's `@Transactional` annotations to enforce ACID properties during stock manipulation. |
-| **Silent JWT Logout** | Sprint 1 | Tokens expiring without user notification caused confusing UI states. Added a frontend Axios interceptor to catch 401 Unauthorized errors and force a clean redirection to the login page. |
+| **CORS Policy Restrictions** | Sprint 2 | The Next.js frontend was initially blocked from communicating with the Spring Boot API. Resolved by implementing a global `WebMvcConfigurer` to explicitly allow `localhost:3000` via CORS mappings. |
+| **Atomic CSV Processing** | Sprint 5 | Initial bulk uploads failed entirely if a single row was malformed. Re-engineered the `InventoryService` to implement row-level try-catch validation, allowing valid rows to pass while logging detailed error reports for the admin. |
+| **FEFO Batch Sequential Logic** | Sprint 7-8 | Deducting stock when an order quantity exceeded a single batch caused data inconsistencies. Implemented a looping deduction algorithm that iterates through sorted batches until the requirement is met, ensuring accurate per-batch tracking. |
+| **Transactional Integrity** | Sprint 9 | Potential race conditions between order checkout and spoilage logging could lead to "ghost stock." Applied Spring's `@Transactional` annotations to all critical service methods to guarantee ACID properties during stock state changes. |
+| **Stateless Auth Interceptors** | Sprint 1 | Silent JWT expiration led to a broken user experience. Developed a frontend Axios interceptor to catch `401 Unauthorized` responses and automatically redirect users to the login portal with a clear notification. |
 
-## 5.6 Concluding Remark
+## 5.7 Concluding Remark
 The implementation phase successfully translated the system design into a working, full-stack application. All core features—ranging from basic authentication and checkout to advanced inventory controls like FEFO deduction, spoilage logging, and predictive alerts—are fully operational. The structured approach to overcoming integration challenges ensures that the system is stable and prepared for systematic evaluation in the subsequent chapter.

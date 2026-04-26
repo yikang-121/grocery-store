@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Use Case Diagram</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --card-bg: #ffffff;
+            --accent-color: #000000;
+            --text-color: #000000;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+            overflow-x: hidden;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin: 0;
+        }
+
+        p {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            font-weight: 400;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border: 4px solid #000000;
+            max-width: 1400px;
+            width: 98%;
+        }
+
+        .mermaid {
+            background-color: transparent;
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Customize Mermaid Colors for Light Theme */
+        .node rect, .node circle, .node ellipse, .node polygon, .node path {
+            fill: #ffffff !important;
+            stroke: #000000 !important;
+            stroke-width: 3px !important;
+        }
+        
+        .edgePath .path {
+            stroke: #000000 !important;
+            stroke-width: 3px !important;
+        }
+
+        .label {
+            color: #000000 !important;
+            font-weight: 700 !important;
+            font-size: 18px !important;
+        }
+
+        .footer {
+            margin-top: 2rem;
+            font-size: 1rem;
+            opacity: 0.6;
+            font-weight: 700;
+        }
+    </style>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            flowchart: {
+                useMaxWidth: false,
+                htmlLabels: true,
+                curve: 'basis',
+                padding: 40
+            }
+        });
+    </script>
+</head>
+<body>
+
+    <header>
+        <h1>System Use Case Diagram</h1>
+        <p>Integrated E-Commerce Inventory System</p>
+    </header>
+
+    <div class="container">
+        <div class="mermaid">
+graph LR
+    subgraph "Actors"
+        A[Admin]
+        C[Customer]
+    end
+
+    subgraph "System: Integrated E-Commerce Inventory System"
+        ALin[Log In]
+        VEP[Verify email and password]
+        MP[Manage Products]
+        MB[Manage batches with expiry dates]
+        LS[Log Spoilage]
+        VSH[View Spoilage History]
+        VRA[View Restocking Alerts]
+        RBU[Restock With Bulk Upload CSV]
+
+        CLin[Log In]
+        BP[Browse products]
+        FP[Filter products]
+        VPD[View Product Details]
+        APC[Add products in carts]
+        CO[Checkout]
+        RA[Register account]
+        COD[Check Order Detail]
+        CnO[Cancel Order]
+        AA[Add Address]
+    end
+
+    A --- ALin
+    A --- MP
+    A --- LS
+    A --- VRA
+    A --- RBU
+
+    ALin -.->|include| VEP
+    MP -.->|include| MB
+    VSH -.->|extend| LS
+
+    C --- CLin
+    C --- BP
+    C --- APC
+    C --- RA
+    C --- COD
+    C --- AA
+
+    CLin -.->|include| VEP
+    FP -.->|extend| BP
+    VPD -.->|include| BP
+    CO -.->|extend| APC
+    CnO -.->|extend| COD
+        </div>
+    </div>
+
+    <div class="footer">
+        Generated for FYP2 - Grocery E-Commerce & Inventory System
+    </div>
+
+</body>
+</html>
