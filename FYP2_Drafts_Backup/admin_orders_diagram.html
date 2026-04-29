@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Use Case Diagram</title>
+    <title>Admin Order Management Activity Diagram</title>
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -62,17 +61,12 @@
             justify-content: center;
         }
 
-        /* Black and white styling */
-        .node rect,
-        .node circle,
-        .node ellipse,
-        .node polygon,
-        .node path {
+        .node rect, .node circle, .node ellipse, .node polygon, .node path {
             fill: #ffffff !important;
             stroke: #000000 !important;
             stroke-width: 4px !important;
         }
-
+        
         .edgePath .path {
             stroke: #000000 !important;
             stroke-width: 4px !important;
@@ -81,12 +75,7 @@
         .label {
             color: #000000 !important;
             font-weight: 800 !important;
-            font-size: 20px !important;
-        }
-
-        /* Ensure label background hides the line */
-        .edgeLabel {
-            background-color: #ffffff !important;
+            font-size: 22px !important;
         }
 
         .footer {
@@ -110,79 +99,41 @@
         });
     </script>
 </head>
-
 <body>
 
     <header>
-        <h1>System Use Case Diagram</h1>
-        <p>Integrated E-Commerce Inventory System</p>
+        <h1>Admin Order Management</h1>
+        <p>Activity Diagram for Order Processing Workflow</p>
     </header>
 
     <div class="container">
         <div class="mermaid">
-            flowchart LR
-            %% Actors
-            C((Customer))
-            A((Administrator))
-
-            %% System Boundary
-            subgraph System["Grocery E-Commerce System"]
-            direction TB
-
-            %% Customer-side Use Cases
-            RA([Register Account])
-            CLin([Customer Log In])
-            BP([Browse Products])
-            APC([Add Products to Cart])
-            CO([Checkout Order])
-            COD([Check Order Detail])
-            AA([Add Address])
-            VLP([View Loyalty Points])
-
-            %% Shared / Sub Use Cases
-            VEP([Verify Email & Password])
-            FP([Filter Products])
-            VPD([View Product Details])
-            CnO([Cancel Order])
-
-            %% Admin-side Use Cases
-            ALin([Admin Log In])
-            MP([Manage Products])
-            RBU([Bulk Upload CSV])
-            MB([Manage Batches])
-            LS([Log Spoilage])
-            VSH([View Spoilage History])
-            VRA([View Restocking Alerts])
-            end
-
-            %% Customer Links (Left side)
-            C --- RA
-            C --- CLin
-            C --- BP
-            C --- APC
-            C --- CO
-            C --- COD
-            C --- AA
-            C --- VLP
-
-            %% Admin Links (Right side)
-            ALin --- A
-            MP --- A
-            RBU --- A
-            LS --- A
-            VRA --- A
-
-            %% Include Dependencies using Unicode characters
-            CLin -.->|«include»| VEP
-            ALin -.->|«include»| VEP
-            MP -.->|«include»| MB
-            VPD -.->|«include»| BP
-
-            %% Extend Dependencies using Unicode characters
-            FP -.->|«extend»| BP
-            CO -.->|«extend»| APC
-            CnO -.->|«extend»| COD
-            VSH -.->|«extend»| LS
+graph TD
+    Start(["Admin Accesses Orders Page"]) --> FetchOrders["System Fetches Orders via API"]
+    FetchOrders --> DisplayOrders["System Displays Order List & Summary Stats"]
+    
+    DisplayOrders --> AdminAction{"Admin Action"}
+    
+    AdminAction -- "Apply Filters" --> ApplyFilters["Filter by Status, Search Term, or Date Range"]
+    ApplyFilters --> DisplayOrders
+    
+    AdminAction -- "View Order Details" --> ExpandOrder["Click Order Row to Expand Details"]
+    ExpandOrder --> ViewDetails["View Customer, Items, Shipping & Payment Info"]
+    
+    ViewDetails --> ActionDecide{"Action Required?"}
+    ActionDecide -- "No" --> DisplayOrders
+    
+    ActionDecide -- "Yes" --> UpdateStatus["Select New Status (e.g. PROCESSING, SHIPPED)"]
+    UpdateStatus --> SendRequest["System Sends PUT Request to API"]
+    
+    SendRequest --> CheckAPI{"API Success?"}
+    CheckAPI -- "Yes" --> UpdateState["Update Local Order Status & Refresh View"]
+    CheckAPI -- "No" --> ShowError["Display Error Message"]
+    ShowError --> DisplayOrders
+    
+    UpdateState --> DisplayOrders
+    
+    AdminAction -- "Leave Page" --> End(["Exit Orders Module"])
         </div>
     </div>
 
@@ -191,5 +142,4 @@
     </div>
 
 </body>
-
 </html>

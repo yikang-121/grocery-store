@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaShoppingCart, FaUserCircle, FaHome, FaThLarge, FaSearch, FaStore, FaSignOutAlt, FaUserShield, FaClipboardList, FaStar } from "react-icons/fa";
 import { useCart } from "@/components/context/CartContext";
-import { isAuthenticated, getCurrentUser, clearAuth } from "@/utils/auth";
+import { isAuthenticated, getCurrentUser, logoutUser } from "@/utils/auth";
 
 export default function Navbar() {
   const { cart } = useCart();
@@ -38,9 +38,9 @@ export default function Navbar() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (confirm("Are you sure you want to logout?")) {
-      clearAuth();
+      await logoutUser();
       setIsLoggedIn(false);
       setUser(null);
       router.push("/");

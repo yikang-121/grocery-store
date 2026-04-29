@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Use Case Diagram</title>
+    <title>Bulk CSV Validation Flow Diagram</title>
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -62,17 +61,12 @@
             justify-content: center;
         }
 
-        /* Black and white styling */
-        .node rect,
-        .node circle,
-        .node ellipse,
-        .node polygon,
-        .node path {
+        .node rect, .node circle, .node ellipse, .node polygon, .node path {
             fill: #ffffff !important;
             stroke: #000000 !important;
             stroke-width: 4px !important;
         }
-
+        
         .edgePath .path {
             stroke: #000000 !important;
             stroke-width: 4px !important;
@@ -81,12 +75,7 @@
         .label {
             color: #000000 !important;
             font-weight: 800 !important;
-            font-size: 20px !important;
-        }
-
-        /* Ensure label background hides the line */
-        .edgeLabel {
-            background-color: #ffffff !important;
+            font-size: 22px !important;
         }
 
         .footer {
@@ -110,79 +99,42 @@
         });
     </script>
 </head>
-
 <body>
 
     <header>
-        <h1>System Use Case Diagram</h1>
-        <p>Integrated E-Commerce Inventory System</p>
+        <h1>Bulk CSV Validation Loop</h1>
+        <p>Data Parsing Activity Diagram</p>
     </header>
 
     <div class="container">
         <div class="mermaid">
-            flowchart LR
-            %% Actors
-            C((Customer))
-            A((Administrator))
-
-            %% System Boundary
-            subgraph System["Grocery E-Commerce System"]
-            direction TB
-
-            %% Customer-side Use Cases
-            RA([Register Account])
-            CLin([Customer Log In])
-            BP([Browse Products])
-            APC([Add Products to Cart])
-            CO([Checkout Order])
-            COD([Check Order Detail])
-            AA([Add Address])
-            VLP([View Loyalty Points])
-
-            %% Shared / Sub Use Cases
-            VEP([Verify Email & Password])
-            FP([Filter Products])
-            VPD([View Product Details])
-            CnO([Cancel Order])
-
-            %% Admin-side Use Cases
-            ALin([Admin Log In])
-            MP([Manage Products])
-            RBU([Bulk Upload CSV])
-            MB([Manage Batches])
-            LS([Log Spoilage])
-            VSH([View Spoilage History])
-            VRA([View Restocking Alerts])
-            end
-
-            %% Customer Links (Left side)
-            C --- RA
-            C --- CLin
-            C --- BP
-            C --- APC
-            C --- CO
-            C --- COD
-            C --- AA
-            C --- VLP
-
-            %% Admin Links (Right side)
-            ALin --- A
-            MP --- A
-            RBU --- A
-            LS --- A
-            VRA --- A
-
-            %% Include Dependencies using Unicode characters
-            CLin -.->|«include»| VEP
-            ALin -.->|«include»| VEP
-            MP -.->|«include»| MB
-            VPD -.->|«include»| BP
-
-            %% Extend Dependencies using Unicode characters
-            FP -.->|«extend»| BP
-            CO -.->|«extend»| APC
-            CnO -.->|«extend»| COD
-            VSH -.->|«extend»| LS
+graph TD
+    Start(["Admin Uploads CSV"]) --> ReadFile["Parse CSV File"]
+    ReadFile --> InitArrays["Init Success List & Error List"]
+    InitArrays --> LoopRows{"More Rows?"}
+    
+    LoopRows -- Yes --> ParseRow["Read Next Row"]
+    ParseRow --> ValidateFormat{"Format & Types Valid?"}
+    
+    ValidateFormat -- No --> LogErrorFormat["Append to Error List"]
+    ValidateFormat -- Yes --> CheckSKU{"SKU Exists in DB?"}
+    
+    CheckSKU -- No --> CreateProduct["Create New Product DB Record"]
+    CheckSKU -- Yes --> UpdateProduct["Update Existing Product Stock"]
+    
+    CreateProduct --> SaveDB["Save to DB Transaction"]
+    UpdateProduct --> SaveDB
+    
+    SaveDB --> SuccessCheck{"Save Successful?"}
+    SuccessCheck -- Yes --> LogSuccess["Append to Success List"]
+    SuccessCheck -- No --> LogErrorDB["Append to Error List"]
+    
+    LogSuccess --> LoopRows
+    LogErrorFormat --> LoopRows
+    LogErrorDB --> LoopRows
+    
+    LoopRows -- No --> GenReport["Compile Batch Report"]
+    GenReport --> ReturnResponse(["Return Summary to UI"])
         </div>
     </div>
 
@@ -191,5 +143,4 @@
     </div>
 
 </body>
-
 </html>

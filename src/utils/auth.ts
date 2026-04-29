@@ -65,3 +65,26 @@ export const clearAuth = (): void => {
 export const requiresLogin = (): boolean => {
   return !isAuthenticated();
 };
+
+/**
+ * Logout user by invalidating token on backend and clearing local storage
+ */
+export const logoutUser = async (): Promise<void> => {
+  if (typeof window === 'undefined') return;
+  
+  const token = localStorage.getItem('token');
+  if (token) {
+    try {
+      await fetch('http://localhost:8080/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+    } catch (error) {
+      console.error('Error during backend logout:', error);
+    }
+  }
+  
+  clearAuth();
+};

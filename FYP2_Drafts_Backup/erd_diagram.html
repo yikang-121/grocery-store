@@ -20,7 +20,7 @@
 
         .erd-canvas {
             position: relative;
-            width: 1750px;
+            width: 1850px;
             height: 1100px;
             border: 4px solid #000;
             background: #fff;
@@ -88,92 +88,97 @@
 <body>
 
 <h1>Full System Entity Relationship Diagram</h1>
-<div class="subtitle">Verified from Source Code | 16 Core Entities | Landscape Orientation</div>
+<div class="subtitle">Verified from Source Code | 16 Core Entities | Clean Layout</div>
 
 <div class="erd-canvas">
 
-    <svg class="lines-layer" viewBox="0 0 1750 1100">
+    <svg class="lines-layer" viewBox="0 0 1850 1100">
         <!-- ====== USER side relationships ====== -->
-        <!-- USER -> USER_ADDRESS (straight down-left) -->
-        <polyline class="rel-line" points="130,195 130,260 55,260 55,300" />
-        <text class="card" x="118" y="225">1</text><text class="card" x="40" y="295">*</text>
+        <!-- USER -> USER_ADDRESS -->
+        <polyline class="rel-line" points="280,183 280,240 115,240 115,300" />
+        <text class="card" x="265" y="200">1</text><text class="card" x="100" y="295">*</text>
 
-        <!-- USER -> POINT_HISTORY (straight down) -->
-        <polyline class="rel-line" points="200,195 200,300" />
-        <text class="card" x="188" y="220">1</text><text class="card" x="188" y="295">*</text>
+        <!-- USER -> POINT_HISTORY -->
+        <polyline class="rel-line" points="330,183 330,260 315,260 315,300" />
+        <text class="card" x="315" y="200">1</text><text class="card" x="300" y="295">*</text>
 
-        <!-- USER -> LOYALTY_POINT (down-right) -->
-        <polyline class="rel-line" points="270,195 340,300" />
-        <text class="card" x="262" y="220">1</text><text class="card" x="330" y="295">1</text>
+        <!-- USER -> LOYALTY_POINT -->
+        <polyline class="rel-line" points="450,183 450,260 505,260 505,300" />
+        <text class="card" x="435" y="200">1</text><text class="card" x="490" y="295">1</text>
 
-        <!-- USER -> USER_VOUCHER (down further left) -->
-        <polyline class="rel-line" points="100,195 100,240 35,240 35,490" />
-        <text class="card" x="88" y="220">1</text><text class="card" x="20" y="485">*</text>
+        <!-- USER -> WISHLIST -->
+        <polyline class="rel-line" points="490,150 680,150 680,300" />
+        <text class="card" x="500" y="145">1</text><text class="card" x="665" y="295">*</text>
 
-        <!-- USER -> WISHLIST (right side, down to row 3) -->
-        <polyline class="rel-line" points="310,165 450,165 450,300" />
-        <text class="card" x="320" y="160">1</text><text class="card" x="438" y="295">*</text>
+        <!-- USER -> USER_VOUCHER -->
+        <polyline class="rel-line" points="250,120 20,120 20,480 115,480 115,530" />
+        <text class="card" x="235" y="115">1</text><text class="card" x="100" y="525">*</text>
 
-        <!-- USER -> ORDER (down to Row 3) -->
-        <polyline class="rel-line" points="200,195 200,240 240,240 240,490" />
-        <text class="card" x="228" y="250">1</text><text class="card" x="228" y="485">*</text>
+        <!-- USER -> ORDER -->
+        <polyline class="rel-line" points="415,183 415,530" />
+        <text class="card" x="400" y="200">1</text><text class="card" x="400" y="525">*</text>
 
-        <!-- ====== ORDER side relationships ====== -->
-        <!-- ORDER -> ORDER_ITEM (straight down) -->
-        <polyline class="rel-line" points="280,720 280,770" />
-        <text class="card" x="265" y="740">1</text><text class="card" x="265" y="768">*</text>
-
-        <!-- ORDER -> PAYMENT (left from order down) -->
-        <polyline class="rel-line" points="170,720 170,770" />
-        <text class="card" x="155" y="740">1</text><text class="card" x="155" y="768">1</text>
-
-        <!-- ORDER_ITEM -> PRODUCT (right across to Product column) -->
-        <polyline class="rel-line" points="400,850 700,850 700,195" />
-        <text class="card" x="405" y="845">*</text><text class="card" x="688" y="210">1</text>
 
         <!-- ====== PRODUCT side relationships ====== -->
-        <!-- PRODUCT -> BATCH (straight down) -->
-        <polyline class="rel-line" points="780,195 780,260 920,260 920,300" />
-        <text class="card" x="770" y="220">1</text><text class="card" x="908" y="295">*</text>
+        <!-- PRODUCT -> BATCH -->
+        <polyline class="rel-line" points="1050,200 1050,300" />
+        <text class="card" x="1035" y="215">1</text><text class="card" x="1035" y="295">*</text>
 
-        <!-- PRODUCT -> INVENTORY_METRICS (right, down) -->
-        <polyline class="rel-line" points="850,165 1150,165 1150,300" />
-        <text class="card" x="860" y="160">1</text><text class="card" x="1138" y="295">*</text>
-
-        <!-- PRODUCT -> STOCK_MOVEMENT (down to row 3) -->
-        <polyline class="rel-line" points="730,195 730,240 630,240 630,490" />
-        <text class="card" x="718" y="225">1</text><text class="card" x="618" y="485">*</text>
-
-        <!-- PRODUCT -> SPOILAGE_LOG (down to row 3 right) -->
-        <polyline class="rel-line" points="810,195 810,250 870,250 870,490" />
-        <text class="card" x="800" y="225">1</text><text class="card" x="858" y="485">*</text>
+        <!-- PRODUCT -> INVENTORY_METRICS -->
+        <polyline class="rel-line" points="1150,200 1150,220 1350,220 1350,300" />
+        <text class="card" x="1135" y="215">1</text><text class="card" x="1335" y="295">1</text>
 
         <!-- PRODUCT -> PURCHASE_ORDER_ITEM -->
-        <polyline class="rel-line" points="850,130 1400,130 1400,300" />
-        <text class="card" x="860" y="125">1</text><text class="card" x="1388" y="295">*</text>
+        <!-- Right edge of PRODUCT is 1220 -->
+        <polyline class="rel-line" points="1220,150 1600,150 1600,300" />
+        <text class="card" x="1230" y="145">1</text><text class="card" x="1585" y="295">*</text>
 
         <!-- PRODUCT -> WISHLIST -->
-        <polyline class="rel-line" points="700,105 500,105 500,300" />
-        <text class="card" x="690" y="100">1</text><text class="card" x="488" y="295">*</text>
+        <polyline class="rel-line" points="1000,150 770,150 770,300" />
+        <text class="card" x="985" y="145">1</text><text class="card" x="775" y="295">*</text>
+
+        <!-- PRODUCT -> STOCK_MOVEMENT -->
+        <polyline class="rel-line" points="1020,200 1020,280 970,280 970,480 850,480 850,530" />
+        <text class="card" x="1005" y="215">1</text><text class="card" x="835" y="525">*</text>
+
+        <!-- PRODUCT -> SPOILAGE_LOG -->
+        <polyline class="rel-line" points="1100,200 1100,250 1225,250 1225,480 1150,480 1150,530" />
+        <text class="card" x="1085" y="215">1</text><text class="card" x="1155" y="525">*</text>
+
+        <!-- PRODUCT -> ORDER_ITEM -->
+        <polyline class="rel-line" points="1000,100 615,100 615,780 550,780 550,800" />
+        <text class="card" x="985" y="95">1</text><text class="card" x="560" y="795">*</text>
+
+
+        <!-- ====== ORDER side relationships ====== -->
+        <!-- ORDER -> PAYMENT -->
+        <polyline class="rel-line" points="320,750 320,770 240,770 240,800" />
+        <text class="card" x="305" y="765">1</text><text class="card" x="225" y="795">1</text>
+
+        <!-- ORDER -> ORDER_ITEM -->
+        <polyline class="rel-line" points="450,750 450,800" />
+        <text class="card" x="435" y="765">1</text><text class="card" x="435" y="795">*</text>
+
 
         <!-- ====== BATCH relationships ====== -->
         <!-- BATCH -> STOCK_MOVEMENT -->
-        <polyline class="rel-line" points="920,490 920,530 670,530 670,490" />
-        <text class="card" x="925" y="500">1</text><text class="card" x="674" y="500">*</text>
+        <polyline class="rel-line" points="1050,470 1050,510 880,510 880,530" />
+        <text class="card" x="1035" y="485">1</text><text class="card" x="885" y="525">*</text>
 
         <!-- BATCH -> SPOILAGE_LOG -->
-        <polyline class="rel-line" points="1000,490 1000,530 910,530 910,490" />
-        <text class="card" x="1005" y="505">1</text><text class="card" x="915" y="505">*</text>
+        <polyline class="rel-line" points="1100,470 1100,530" />
+        <text class="card" x="1085" y="485">1</text><text class="card" x="1085" y="525">*</text>
 
-        <!-- ====== PURCHASE_ORDER -> PURCHASE_ORDER_ITEM ====== -->
-        <polyline class="rel-line" points="1500,490 1500,530 1450,530 1450,490" />
-        <text class="card" x="1505" y="505">1</text><text class="card" x="1438" y="505">*</text>
 
+        <!-- ====== PURCHASE_ORDER relationships ====== -->
+        <!-- PURCHASE_ORDER -> PURCHASE_ORDER_ITEM -->
+        <polyline class="rel-line" points="1600,530 1600,470" />
+        <text class="card" x="1585" y="515">1</text><text class="card" x="1585" y="485">*</text>
     </svg>
 
     <!-- ==================== ROW 1 (y=50): USER & PRODUCT ==================== -->
     <!-- USER -->
-    <div class="entity" style="left: 80px; top: 50px; width: 240px;">
+    <div class="entity" style="left: 250px; top: 50px; width: 240px;">
         <div class="entity-header">USER</div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
         <div class="entity-row"><span class="col-type">string</span><span class="col-name">email</span><span class="col-key"></span></div>
@@ -184,7 +189,7 @@
     </div>
 
     <!-- PRODUCT -->
-    <div class="entity" style="left: 680px; top: 50px; width: 220px;">
+    <div class="entity" style="left: 1000px; top: 50px; width: 220px;">
         <div class="entity-header">PRODUCT</div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
         <div class="entity-row"><span class="col-type">string</span><span class="col-name">name</span><span class="col-key"></span></div>
@@ -197,7 +202,7 @@
 
     <!-- ==================== ROW 2 (y=300): Children of USER & PRODUCT ==================== -->
     <!-- USER_ADDRESS -->
-    <div class="entity" style="left: 10px; top: 300px; width: 170px;">
+    <div class="entity" style="left: 30px; top: 300px; width: 170px;">
         <div class="entity-header">USER_ADDRESS</div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">userId</span><span class="col-key">FK</span></div>
@@ -209,7 +214,7 @@
     </div>
 
     <!-- POINT_HISTORY -->
-    <div class="entity" style="left: 190px; top: 300px; width: 170px;">
+    <div class="entity" style="left: 230px; top: 300px; width: 170px;">
         <div class="entity-header">POINT_HISTORY</div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">userId</span><span class="col-key">FK</span></div>
@@ -220,7 +225,7 @@
     </div>
 
     <!-- LOYALTY_POINT -->
-    <div class="entity" style="left: 310px; top: 300px; width: 150px;">
+    <div class="entity" style="left: 430px; top: 300px; width: 150px;">
         <div class="entity-header">LOYALTY_POINT</div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">userId</span><span class="col-key">FK</span></div>
@@ -229,7 +234,7 @@
     </div>
 
     <!-- WISHLIST -->
-    <div class="entity" style="left: 440px; top: 300px; width: 150px;">
+    <div class="entity" style="left: 650px; top: 300px; width: 150px;">
         <div class="entity-header">WISHLIST</div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">userId</span><span class="col-key">FK</span></div>
@@ -238,7 +243,7 @@
     </div>
 
     <!-- BATCH -->
-    <div class="entity" style="left: 860px; top: 300px; width: 200px;">
+    <div class="entity" style="left: 1000px; top: 300px; width: 200px;">
         <div class="entity-header">BATCH</div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">productId</span><span class="col-key">FK</span></div>
@@ -250,7 +255,7 @@
     </div>
 
     <!-- INVENTORY_METRICS -->
-    <div class="entity" style="left: 1080px; top: 300px; width: 200px;">
+    <div class="entity" style="left: 1250px; top: 300px; width: 200px;">
         <div class="entity-header">INVENTORY_METRICS</div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
         <div class="entity-row"><span class="col-type">string</span><span class="col-name">skuId</span><span class="col-key"></span></div>
@@ -266,7 +271,7 @@
     </div>
 
     <!-- PURCHASE_ORDER_ITEM -->
-    <div class="entity" style="left: 1350px; top: 300px; width: 200px;">
+    <div class="entity" style="left: 1500px; top: 300px; width: 200px;">
         <div class="entity-header">PURCHASE_ORDER_ITEM</div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">purchaseOrderId</span><span class="col-key">FK</span></div>
@@ -279,9 +284,9 @@
         <div class="entity-row"><span class="col-type">decimal</span><span class="col-name">lineTotal</span><span class="col-key"></span></div>
     </div>
 
-    <!-- ==================== ROW 3 (y=490): ==================== -->
-    <!-- USER_VOUCHER (far left) -->
-    <div class="entity" style="left: 10px; top: 490px; width: 170px;">
+    <!-- ==================== ROW 3 (y=530): ==================== -->
+    <!-- USER_VOUCHER -->
+    <div class="entity" style="left: 30px; top: 530px; width: 170px;">
         <div class="entity-header">USER_VOUCHER</div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">userId</span><span class="col-key">FK</span></div>
@@ -292,7 +297,7 @@
     </div>
 
     <!-- ORDER -->
-    <div class="entity" style="left: 190px; top: 490px; width: 220px;">
+    <div class="entity" style="left: 300px; top: 530px; width: 220px;">
         <div class="entity-header">ORDER</div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
         <div class="entity-row"><span class="col-type">string</span><span class="col-name">orderNo</span><span class="col-key"></span></div>
@@ -308,7 +313,7 @@
     </div>
 
     <!-- STOCK_MOVEMENT -->
-    <div class="entity" style="left: 590px; top: 490px; width: 200px;">
+    <div class="entity" style="left: 750px; top: 530px; width: 200px;">
         <div class="entity-header">STOCK_MOVEMENT</div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">productId</span><span class="col-key">FK</span></div>
@@ -322,7 +327,7 @@
     </div>
 
     <!-- SPOILAGE_LOG -->
-    <div class="entity" style="left: 820px; top: 490px; width: 200px;">
+    <div class="entity" style="left: 1000px; top: 530px; width: 200px;">
         <div class="entity-header">SPOILAGE_LOG</div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">productId</span><span class="col-key">FK</span></div>
@@ -335,7 +340,7 @@
     </div>
 
     <!-- PURCHASE_ORDER -->
-    <div class="entity" style="left: 1420px; top: 540px; width: 200px;">
+    <div class="entity" style="left: 1500px; top: 530px; width: 200px;">
         <div class="entity-header">PURCHASE_ORDER</div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
         <div class="entity-row"><span class="col-type">string</span><span class="col-name">poNumber</span><span class="col-key"></span></div>
@@ -348,9 +353,9 @@
         <div class="entity-row"><span class="col-type">datetime</span><span class="col-name">approvedAt</span><span class="col-key"></span></div>
     </div>
 
-    <!-- ==================== ROW 4 (y=770): Bottom row ==================== -->
+    <!-- ==================== ROW 4 (y=800): Bottom row ==================== -->
     <!-- PAYMENT -->
-    <div class="entity" style="left: 80px; top: 770px; width: 180px;">
+    <div class="entity" style="left: 150px; top: 800px; width: 180px;">
         <div class="entity-header">PAYMENT</div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">orderId</span><span class="col-key">FK</span></div>
@@ -362,7 +367,7 @@
     </div>
 
     <!-- ORDER_ITEM -->
-    <div class="entity" style="left: 280px; top: 770px; width: 200px;">
+    <div class="entity" style="left: 400px; top: 800px; width: 200px;">
         <div class="entity-header">ORDER_ITEM</div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">id</span><span class="col-key">PK</span></div>
         <div class="entity-row"><span class="col-type">long</span><span class="col-name">orderId</span><span class="col-key">FK</span></div>
@@ -375,7 +380,7 @@
 
 </div>
 
-<div class="footer">Verified Implementation Schema | Hand-Positioned Zero-Overlap Layout</div>
+<div class="footer">Verified Implementation Schema | Cleaned Hand-Positioned Zero-Overlap Layout</div>
 
 </body>
 </html>

@@ -9,6 +9,17 @@ A comprehensive testing strategy was employed to validate the system, utilizing 
 
 Performance was evaluated against critical non-functional requirements. The system demonstrated high throughput during bulk CSV processing (handling 500+ SKU records in under 2 seconds) and maintained 100% data consistency during concurrent FEFO deductions—even under simulated heavy load where multiple orders spanned identical batches.
 
+### 6.1.1 Performance Testing Results
+
+| Test Area | Metric | Test Condition | Result | Evaluation |
+|---|---|---|---|---|
+| Bulk CSV Upload | Processing time | 100 SKU records | 0.6 seconds | Acceptable |
+| Bulk CSV Upload | Processing time | 500+ SKU records | Less than 2 seconds | Meets requirement |
+| Checkout | Response time | Normal checkout request | Less than 1 second | Meets requirement |
+| FEFO Deduction | Data consistency | Multiple orders accessing same product batches | 100% consistent | Passed |
+| Stock Report Export | Export success rate | CSV/PDF generation | 100% | Passed |
+| Authentication | Invalid access blocking | Customer accessing admin API | 403 Forbidden | Passed |
+
 ## 6.2 Testing Setup and Result
 The system was tested module by module using manual Black-Box testing and Integration testing. The following tables outline the critical test cases executed for the system's core and advanced modules.
 
@@ -199,4 +210,3 @@ The following table provides a final evaluation of the project against the initi
 
 ## 6.6 Concluding Remark
 The testing and evaluation phases confirm that the E-Commerce Website and Inventory System operates reliably under its specified conditions. The custom-built inventory controls function flawlessly within the e-commerce architecture. Importantly, the project has successfully addressed all four of its core objectives, delivering a tangible, technological step forward for small-to-medium grocery enterprises managing perishable goods.
-gi
