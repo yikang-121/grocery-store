@@ -7,12 +7,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaShoppingCart, FaUserCircle, FaHome, FaThLarge, FaSearch, FaStore, FaSignOutAlt, FaUserShield, FaClipboardList, FaStar } from "react-icons/fa";
 import { useCart } from "@/components/context/CartContext";
-import { isAuthenticated, getCurrentUser, logoutUser } from "@/utils/auth";
+import { isAuthenticated, getCurrentUser, logoutUser, User } from "@/utils/auth";
 
 export default function Navbar() {
   const { cart } = useCart();
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -118,7 +118,7 @@ export default function Navbar() {
             )}
             
             {/* Admin Dashboard Button (only show for admin users) */}
-            {user?.role === 'admin' && (
+            {user?.role === 'ADMIN' && (
               <Link
                 href="/admin"
                 className="flex items-center justify-center w-10 h-10 border border-green-500 text-green-600 hover:bg-green-500 hover:text-white transition-all duration-200 rounded-full"

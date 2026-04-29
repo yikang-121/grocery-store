@@ -54,7 +54,7 @@ export default function Footer() {
             <ul className="space-y-4">
               <li>
                 <Link href="#" className="text-gray-600 hover:text-black transition-colors duration-200 uppercase text-sm tracking-wide">
-                  What's In Store
+                  What&apos;s In Store
                 </Link>
               </li>
               <li>

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { FaQrcode, FaCheckCircle, FaMobileAlt } from "react-icons/fa";
+import { FaCheckCircle, FaMobileAlt } from "react-icons/fa";
 
 interface TngPaymentSimulationProps {
     amount: number;
@@ -33,7 +33,7 @@ export default function TngPaymentSimulation({ amount, onSuccess }: TngPaymentSi
                         <FaMobileAlt className="text-white" size={40} />
                     </div>
                     <div>
-                        <h3 className="text-2xl font-black text-blue-900 mb-2">Touch 'n Go eWallet</h3>
+                        <h3 className="text-2xl font-black text-blue-900 mb-2">Touch &apos;n Go eWallet</h3>
                         <p className="text-blue-700 font-medium">Pay securely using your TNG eWallet app</p>
                     </div>
                     <button
