@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaUserCircle, FaClipboardList, FaHeart, FaMapMarkerAlt, FaStar, FaSignOutAlt, FaExclamationTriangle } from "react-icons/fa";
+import { logoutUser } from "@/utils/auth";
 
 export default function AccountPage() {
   const router = useRouter();
@@ -46,15 +47,9 @@ export default function AccountPage() {
     setLogoutLoading(true);
     
     try {
-      // Clear local storage
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      
-      // Show success message
-      alert("Logged out successfully!");
-      
-      // Redirect to home page
-      router.push("/");
+      // Use the fail-safe centralized logout utility
+      await logoutUser();
+      // logoutUser handles clearAuth() and redirection to "/"
     } catch (error) {
       console.error("Logout error:", error);
       alert("Error during logout. Please try again.");

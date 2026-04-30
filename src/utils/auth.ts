@@ -8,7 +8,7 @@ export interface User {
 }
 
 /**
- * Check if user is currently authenticated
+ * Check if user is currently authenticated and session is not expired
  * @returns boolean indicating if user is logged in
  */
 export const isAuthenticated = (): boolean => {
@@ -17,7 +17,27 @@ export const isAuthenticated = (): boolean => {
   const token = localStorage.getItem('token');
   const userData = localStorage.getItem('user');
   
-  return !!(token && userData);
+  if (!token || !userData) return false;
+
+  // Check for JWT expiration
+  try {
+    const payloadBase64 = token.split('.')[1];
+    if (!payloadBase64) return false;
+    
+    const decodedPayload = JSON.parse(atob(payloadBase64));
+    const exp = decodedPayload.exp;
+    
+    if (exp && Date.now() >= exp * 1000) {
+      // Token is expired
+      console.warn('Session expired');
+      return false;
+    }
+  } catch (error) {
+    console.error('Error validating token expiration:', error);
+    return false;
+  }
+  
+  return true;
 };
 
 /**
@@ -31,7 +51,12 @@ export const getCurrentUser = (): User | null => {
     const userData = localStorage.getItem('user');
     if (!userData) return null;
     
-    return JSON.parse(userData) as User;
+    const user = JSON.parse(userData) as User;
+    // Normalize role to uppercase
+    if (user.role) {
+      user.role = user.role.toUpperCase() as 'CUSTOMER' | 'ADMIN';
+    }
+    return user;
   } catch (error) {
     console.error('Error parsing user data:', error);
     return null;
@@ -73,18 +98,29 @@ export const logoutUser = async (): Promise<void> => {
   if (typeof window === 'undefined') return;
   
   const token = localStorage.getItem('token');
+  
+  // ALWAYS clear local auth regardless of backend success
+  const cleanup = () => {
+    clearAuth();
+    // Use window.location instead of router to force a clean state
+    if (window.location.pathname !== '/') {
+      window.location.href = '/';
+    }
+  };
+
   if (token) {
     try {
-      await fetch('http://localhost:8080/api/auth/logout', {
+      // Use the new /signout endpoint
+      await fetch('http://localhost:8080/api/auth/signout', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
     } catch (error) {
-      console.error('Error during backend logout:', error);
+      console.error('Error during backend logout (continuing with local logout):', error);
     }
   }
   
-  clearAuth();
+  cleanup();
 };
