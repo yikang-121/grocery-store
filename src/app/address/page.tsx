@@ -9,6 +9,7 @@ import {
   FaExclamationTriangle,
 } from "react-icons/fa";
 import { getCurrentUser, getAuthToken, isAuthenticated } from "@/utils/auth";
+import { API_BASE } from '@/utils/apiBase';
 
 /** UI Address shape (matches how we render + edit) */
 type UIAddress = {
@@ -94,7 +95,7 @@ export default function AddressPage() {
       if (!user) throw new Error("User not found. Please log in again.");
 
       const res = await fetch(
-        `http://localhost:8080/api/addresses?userId=${user.id}`,
+        `${API_BASE}/api/addresses?userId=${user.id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -124,7 +125,7 @@ export default function AddressPage() {
 
       let res: Response;
       if (editingId !== null) {
-        res = await fetch(`http://localhost:8080/api/addresses/${editingId}`, {
+        res = await fetch(`${API_BASE}/api/addresses/${editingId}`, {
           method: "PUT",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -133,7 +134,7 @@ export default function AddressPage() {
           body: JSON.stringify(payload),
         });
       } else {
-        res = await fetch("http://localhost:8080/api/addresses", {
+        res = await fetch(`${API_BASE}/api/addresses`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -224,7 +225,7 @@ export default function AddressPage() {
       const user = getCurrentUser();
 
       const res = await fetch(
-        `http://localhost:8080/api/addresses/${id}?userId=${user?.id}`,
+        `${API_BASE}/api/addresses/${id}?userId=${user?.id}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },

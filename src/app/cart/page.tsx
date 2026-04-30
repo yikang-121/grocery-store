@@ -6,6 +6,7 @@ import { useCart } from "@/components/context/CartContext";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { isAuthenticated } from "@/utils/auth";
+import { API_BASE } from '@/utils/apiBase';
 
 export default function CartPage() {
   const router = useRouter();
@@ -19,7 +20,7 @@ export default function CartPage() {
   const [stockErrors, setStockErrors] = useState<Record<number, string>>({});
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  const base = process.env.NEXT_PUBLIC_API ?? "http://localhost:8080";
+  const base = process.env.NEXT_PUBLIC_API ?? API_BASE;
 
   // Fetch stock data for all cart items
   const fetchStockData = async () => {

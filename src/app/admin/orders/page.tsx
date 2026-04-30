@@ -2,13 +2,14 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import {
+import { API_BASE } from '@/utils/apiBase';
   FaArrowLeft, FaClipboardList, FaSearch, FaFilter,
   FaChevronDown, FaChevronUp, FaUser, FaMapMarkerAlt,
   FaBoxOpen, FaCreditCard, FaTimes, FaCheck,
   FaTruck, FaSpinner, FaClock, FaBan,
 } from "react-icons/fa";
 
-const API = "http://localhost:8080/api/orders";
+const API = `${API_BASE}/api/orders`;
 
 interface OrderItem {
   id: number;

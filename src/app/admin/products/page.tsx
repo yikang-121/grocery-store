@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import {
+import { API_BASE } from '@/utils/apiBase';
   FaPlus, FaBoxOpen, FaChevronDown, FaChevronRight,
   FaExclamationTriangle, FaCheckCircle, FaClock,
   FaSearch, FaTimes, FaTag, FaCubes, FaCalendarAlt,
@@ -58,7 +59,7 @@ export default function AdminProductsPage() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:8080/api/products");
+      const res = await fetch(`${API_BASE}/api/products`);
       const data = await res.json();
       setProducts(data);
     } catch (err) {
@@ -135,7 +136,7 @@ export default function AdminProductsPage() {
     };
 
     try {
-      const res = await fetch("http://localhost:8080/api/admin/restock/batch", {
+      const res = await fetch(`${API_BASE}/api/admin/restock/batch`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(batchData),
@@ -166,7 +167,7 @@ export default function AdminProductsPage() {
   const handleCleanupExpired = async () => {
     if (!confirm("Are you sure you want to clear all expired batches? This will move all remaining quantities to spoilage logs.")) return;
     try {
-      const res = await fetch("http://localhost:8080/api/admin/restock/cleanup-expired", { method: "POST" });
+      const res = await fetch(`${API_BASE}/api/admin/restock/cleanup-expired`, { method: "POST" });
       if (!res.ok) throw new Error("Cleanup failed");
       const count = await res.json();
       alert(`Cleanup successful! ${count} batches processed.`);
@@ -181,7 +182,7 @@ export default function AdminProductsPage() {
     e.preventDefault();
     const qty = parseInt(spoilageForm.qty) || 0;
     try {
-      const res = await fetch("http://localhost:8080/api/admin/restock/spoilage", {
+      const res = await fetch(`${API_BASE}/api/admin/restock/spoilage`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ batchId, quantity: qty, reason: spoilageForm.reason }),

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FYP Project Timeline - Gantt Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --bg: #f9fafb;
+            --text: #111827;
+            --card-bg: #ffffff;
+            --border: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 0 0 10px 0;
+            letter-spacing: -0.025em;
+            color: var(--text);
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+
+        .phase-legend {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 30px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot.fyp1 { background-color: #82b1ff; }
+        .dot.fyp2 { background-color: #b39ddb; }
+
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #9ca3af;
+        }
+
+        /* Customizing Mermaid Gantt Styles */
+        .grid .tick { stroke: #f3f4f6; }
+        .grid path { stroke-width: 0; }
+        .taskText { font-family: 'Inter', sans-serif !important; font-weight: 600 !important; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Project Implementation Timeline</h1>
+        <p class="subtitle">Agile Scrum Development Phases for FYP1 & FYP2</p>
+    </header>
+
+    <div class="phase-legend">
+        <div class="legend-item"><span class="dot fyp1"></span> Phase 1: FYP1 (Foundation)</div>
+        <div class="legend-item"><span class="dot fyp2"></span> Phase 2: FYP2 (Intelligence)</div>
+    </div>
+
+    <div class="mermaid">
+gantt
+    title Project Schedule
+    dateFormat  YYYY-MM-DD
+    axisFormat  %b %Y
+    
+    section PHASE 1 FYP1
+    Sprint 1 Login Basic + DB Design       :active, s1, 2025-05-01, 30d
+    Sprint 2 Registration                  :s2, after s1, 30d
+    Sprint 3 Checkout Cart Setup           :s3, after s2, 30d
+    Sprint 4 Checkout Order Processing     :s4, after s3, 30d
+    Sprint 5 Bulk Upload Basic             :s5, after s4, 30d
+    Sprint 6 Bulk Upload Validation        :s6, after s5, 30d
+
+    section PHASE 2 FYP2
+    Sprint 7 FEFO Logic Design             :crit, s7, 2026-02-01, 14d
+    Sprint 8 FEFO Implementation           :crit, s8, after s7, 14d
+    Sprint 9 Spoilage Logging Core         :crit, s9, after s8, 14d
+    Sprint 10 Spoilage Logging Report      :crit, s10, after s9, 14d
+    Sprint 11 Restocking Algorithm         :crit, s11, after s10, 14d
+    Sprint 12 Predictive Dashboard         :crit, s12, after s11, 14d
+    </div>
+
+    <div class="footer">
+        Generated for Final Year Project Documentation &bull; 2026
+    </div>
+</div>
+
+<script>
+    mermaid.initialize({ 
+        startOnLoad: true,
+        theme: 'base',
+        themeVariables: {
+            primaryColor: '#82b1ff',
+            primaryTextColor: '#fff',
+            primaryBorderColor: '#2962ff',
+            lineColor: '#f3f4f6',
+            secondaryColor: '#b39ddb',
+            tertiaryColor: '#fff',
+            sectionBkgColor: '#f9fafb',
+            sectionBkgColor2: '#ffffff',
+            taskFontSize: '12px',
+            fontFamily: 'Inter'
+        }
+    });
+</script>
+
+</body>
+</html>

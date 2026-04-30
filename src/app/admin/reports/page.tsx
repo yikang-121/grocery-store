@@ -7,6 +7,7 @@ import {
     FaArrowUp, FaShoppingCart, FaTags, FaHistory
 } from "react-icons/fa";
 import Link from "next/link";
+import { API_BASE } from '@/utils/apiBase';
 
 // Types matching backend DTOs
 interface TopStockedProduct {
@@ -92,7 +93,7 @@ export default function ReportsPage() {
 
     const fetchStockReport = async () => {
         try {
-            const res = await fetch(`http://localhost:8080/api/admin/reports/stock`);
+            const res = await fetch(`${API_BASE}/api/admin/reports/stock`);
             if (!res.ok) throw new Error("Failed to fetch stock report");
             setStockData(await res.json());
         } catch (err) {
@@ -102,7 +103,7 @@ export default function ReportsPage() {
 
     const fetchSalesReport = async (y: number, m: number) => {
         try {
-            const res = await fetch(`http://localhost:8080/api/admin/reports/sales?year=${y}&month=${m}`);
+            const res = await fetch(`${API_BASE}/api/admin/reports/sales?year=${y}&month=${m}`);
             if (!res.ok) throw new Error("Failed to fetch sales report");
             setSalesData(await res.json());
         } catch (err) {
@@ -132,7 +133,7 @@ export default function ReportsPage() {
             const y = date.getFullYear();
             const m = date.getMonth() + 1;
 
-            const endpoint = `http://localhost:8080/api/admin/reports/export/stock/${format}`;
+            const endpoint = `${API_BASE}/api/admin/reports/export/stock/${format}`;
 
             const res = await fetch(endpoint);
             if (!res.ok) throw new Error("Export failed");

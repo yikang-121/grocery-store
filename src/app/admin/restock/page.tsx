@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
+import { API_BASE } from '@/utils/apiBase';
   FaUpload, FaCalculator, FaEye, FaDownload,
   FaInfoCircle, FaCheckCircle, FaExclamationTriangle,
   FaArrowLeft, FaFileAlt, FaCloudUploadAlt, FaSlidersH,
@@ -271,7 +272,7 @@ export default function RestockPage() {
       fd.append("file", file);                       // MUST be "file"
       fd.append("profitMargin", String(profitMargin)); // backend expects profitMargin (%)
 
-      const res = await fetch("http://localhost:8080/api/admin/restock/bulk-upload", {
+      const res = await fetch(`${API_BASE}/api/admin/restock/bulk-upload`, {
         method: "POST",
         body: fd,
       });

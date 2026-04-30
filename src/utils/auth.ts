@@ -1,4 +1,4 @@
-// Authentication utility functions
+import { API_BASE } from '@/utils/apiBase';
 
 export interface User {
   id: number;
@@ -111,7 +111,7 @@ export const logoutUser = async (): Promise<void> => {
   if (token) {
     try {
       // Use the new /signout endpoint
-      await fetch('http://localhost:8080/api/auth/signout', {
+      await fetch(`${API_BASE}/api/auth/signout`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

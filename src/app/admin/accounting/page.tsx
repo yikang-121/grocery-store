@@ -9,8 +9,9 @@ import {
   FaArrowUp, FaArrowDown, FaBrain, FaLeaf
 } from "react-icons/fa";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from "recharts";
+import { API_BASE } from '@/utils/apiBase';
 
-const API = "http://localhost:8080/api/admin/accounting";
+const API = `${API_BASE}/api/admin/accounting`;
 
 interface AccountingSummary {
   year: number;

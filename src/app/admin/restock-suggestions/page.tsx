@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { FaArrowLeft, FaBalanceScale, FaChartLine, FaLeaf, FaFire, FaBoxes, FaArrowUp, FaArrowDown } from "react-icons/fa";
 import Link from "next/link";
+import { API_BASE } from '@/utils/apiBase';
 
 interface RestockCalculationResponse {
     skuId: string;
@@ -70,8 +71,8 @@ export default function RestockSuggestionsPage() {
         setLoading(true);
         try {
             const [adaptiveRes, baselineRes] = await Promise.all([
-                fetch("http://localhost:8080/api/v1/inventory/calculate-restock-all"),
-                fetch("http://localhost:8080/api/v1/inventory/calculate-baseline-all")
+                fetch(`${API_BASE}/api/v1/inventory/calculate-restock-all`),
+                fetch(`${API_BASE}/api/v1/inventory/calculate-baseline-all`)
             ]);
 
             const adaptiveData: RestockCalculationResponse[] = await adaptiveRes.json();
@@ -112,7 +113,7 @@ export default function RestockSuggestionsPage() {
     const handleSync = async () => {
         setSyncing(true);
         try {
-            const res = await fetch("http://localhost:8080/api/v1/inventory/sync-metrics", {
+            const res = await fetch(`${API_BASE}/api/v1/inventory/sync-metrics`, {
                 method: "POST"
             });
             if (res.ok) {
