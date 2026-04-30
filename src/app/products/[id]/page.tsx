@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { FaShoppingBasket, FaCheckCircle, FaExclamationTriangle, FaSync } from "react-icons/fa";
 import { useCart } from "@/components/context/CartContext";
+import { API_BASE } from '@/utils/apiBase';
 
 type ApiProduct = {
   id: number;
@@ -19,7 +20,7 @@ type ApiProduct = {
   batches?: any[];
 };
 
-const base = process.env.NEXT_PUBLIC_API ?? "http://localhost:8080";
+const base = process.env.NEXT_PUBLIC_API ?? API_BASE;
 const currency = (n: number) => `RM${Number(n || 0).toFixed(2)}`;
 
 // Normalize any backend shape into what the UI expects

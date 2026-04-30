@@ -6,6 +6,7 @@ import {
   FaInfoCircle, FaCheckCircle, FaExclamationTriangle,
   FaArrowLeft, FaFileAlt, FaCloudUploadAlt, FaSlidersH,
 } from "react-icons/fa";
+import { API_BASE } from '@/utils/apiBase';
 
 /* ---------- Types ---------- */
 type CsvRow = {
@@ -271,7 +272,7 @@ export default function RestockPage() {
       fd.append("file", file);                       // MUST be "file"
       fd.append("profitMargin", String(profitMargin)); // backend expects profitMargin (%)
 
-      const res = await fetch("http://localhost:8080/api/admin/restock/bulk-upload", {
+      const res = await fetch(`${API_BASE}/api/admin/restock/bulk-upload`, {
         method: "POST",
         body: fd,
       });

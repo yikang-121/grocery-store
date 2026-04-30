@@ -8,6 +8,7 @@ import {
   FaHeart, FaRegHeart
 } from "react-icons/fa";
 import { useCart } from "@/components/context/CartContext";
+import { API_BASE } from '@/utils/apiBase';
 
 const categories = [
   { name: "All", icon: null },
@@ -46,7 +47,7 @@ export default function ProductsPage() {
   const { addToCart } = useCart();
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/products")
+    fetch(`${API_BASE}/api/products`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -68,7 +69,7 @@ export default function ProductsPage() {
     const userData = localStorage.getItem("user");
     if (userData) {
       const user = JSON.parse(userData);
-      fetch(`http://localhost:8080/api/wishlist/${user.id}`)
+      fetch(`${API_BASE}/api/wishlist/${user.id}`)
         .then(res => res.json())
         .then(data => {
           if (Array.isArray(data)) {
@@ -93,7 +94,7 @@ export default function ProductsPage() {
 
     try {
       const method = isInWishlist ? "DELETE" : "POST";
-      const res = await fetch(`http://localhost:8080/api/wishlist/${user.id}/${productId}`, { method });
+      const res = await fetch(`${API_BASE}/api/wishlist/${user.id}/${productId}`, { method });
       if (res.ok) {
         setWishlistIds(prev => 
           isInWishlist ? prev.filter(id => id !== productId) : [...prev, productId]

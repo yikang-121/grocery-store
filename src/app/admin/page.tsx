@@ -6,6 +6,7 @@ import {
   FaArrowRight, FaChartLine, FaExclamationTriangle, FaShoppingCart,
   FaMoneyBillWave, FaExchangeAlt, FaBell, FaCheckDouble, FaTruck,
 } from "react-icons/fa";
+import { API_BASE } from '@/utils/apiBase';
 
 interface Notification {
   id: number;
@@ -17,7 +18,7 @@ interface Notification {
   createdAt: string;
 }
 
-const NOTIF_API = "http://localhost:8080/api/admin/notifications";
+const NOTIF_API = `${API_BASE}/api/admin/notifications`;
 
 export default function AdminDashboard() {
   const admin = {

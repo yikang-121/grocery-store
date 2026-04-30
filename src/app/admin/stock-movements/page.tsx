@@ -6,8 +6,9 @@ import {
   FaArrowLeft, FaArrowUp, FaArrowDown, FaExchangeAlt, FaSearch,
   FaFilter, FaWarehouse, FaBoxOpen,
 } from "react-icons/fa";
+import { API_BASE } from '@/utils/apiBase';
 
-const API = "http://localhost:8080/api/admin/accounting";
+const API = `${API_BASE}/api/admin/accounting`;
 
 interface StockMovement {
   id: number;

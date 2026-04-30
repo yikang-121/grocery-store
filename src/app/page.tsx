@@ -6,6 +6,7 @@ import Link from "next/link";
 import { FaLeaf, FaEgg, FaCarrot, FaAppleAlt, FaFish, FaCheese, FaShoppingBasket, FaArrowRight, FaTruck, FaClock, FaStar, FaMapMarkerAlt, FaHeart, FaRegHeart } from "react-icons/fa";
 import { useCart } from "@/components/context/CartContext";
 import { Product } from "@/types";
+import { API_BASE } from "@/utils/apiBase";
 
 const categories = [
   { name: "Fresh Produce", icon: <FaCarrot size={32} className="text-green-600" />, count: "200+ items" },
@@ -30,7 +31,7 @@ export default function HomePage() {
   const [wishlistIds, setWishlistIds] = useState<number[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/products/top-rated?limit=4")
+    fetch(`${API_BASE}/api/products/top-rated?limit=4`)
       .then((res) => res.json())
       .then((data) => {
         // Ensure data is an array before setting it
@@ -50,7 +51,7 @@ export default function HomePage() {
     const userData = localStorage.getItem("user");
     if (userData) {
       const user = JSON.parse(userData);
-      fetch(`http://localhost:8080/api/wishlist/${user.id}`)
+      fetch(`${API_BASE}/api/wishlist/${user.id}`)
         .then(res => res.json())
         .then(data => {
           if (Array.isArray(data)) {
@@ -75,7 +76,7 @@ export default function HomePage() {
 
     try {
       const method = isInWishlist ? "DELETE" : "POST";
-      const res = await fetch(`http://localhost:8080/api/wishlist/${user.id}/${productId}`, { method });
+      const res = await fetch(`${API_BASE}/api/wishlist/${user.id}/${productId}`, { method });
       if (res.ok) {
         setWishlistIds(prev => 
           isInWishlist ? prev.filter(id => id !== productId) : [...prev, productId]

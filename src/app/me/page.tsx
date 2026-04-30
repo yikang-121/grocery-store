@@ -3,6 +3,8 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaUserCircle, FaClipboardList, FaHeart, FaMapMarkerAlt, FaStar, FaSignOutAlt, FaExclamationTriangle } from "react-icons/fa";
+import { logoutUser } from "@/utils/auth";
+import { API_BASE } from '@/utils/apiBase';
 
 export default function AccountPage() {
   const router = useRouter();
@@ -27,7 +29,7 @@ export default function AccountPage() {
       setUser(parsedUser);
       
       // Fetch points
-      fetch(`http://localhost:8080/api/points/balance/${parsedUser.id}`)
+      fetch(`${API_BASE}/api/points/balance/${parsedUser.id}`)
         .then(res => res.json())
         .then(data => setPoints(data.balance || 0))
         .catch(err => console.error("Error fetching points:", err));
@@ -46,15 +48,9 @@ export default function AccountPage() {
     setLogoutLoading(true);
     
     try {
-      // Clear local storage
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      
-      // Show success message
-      alert("Logged out successfully!");
-      
-      // Redirect to home page
-      router.push("/");
+      // Use the fail-safe centralized logout utility
+      await logoutUser();
+      // logoutUser handles clearAuth() and redirection to "/"
     } catch (error) {
       console.error("Logout error:", error);
       alert("Error during logout. Please try again.");

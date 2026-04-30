@@ -13,6 +13,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import StripePaymentForm from "@/components/checkout/StripePaymentForm";
 import TngPaymentSimulation from "@/components/checkout/TngPaymentSimulation";
+import { API_BASE } from '@/utils/apiBase';
 
 // Replace with your real Publishable Key from Stripe Dashboard
 const stripePromise = loadStripe("pk_test_51T7dTdAOBZ0b6qbnDpkrq93QUnGSLkBaneztyfuVhHRnDg3kUkdUYHzMuXFrPTY31qJwhmmPDExBRrsS4s32L0mF00x37P1PJ7");
@@ -115,7 +116,7 @@ export default function CheckoutPage() {
   // Fetch points balance
   useEffect(() => {
     if (user?.id) {
-      fetch(`http://localhost:8080/api/points/balance/${user.id}`)
+      fetch(`${API_BASE}/api/points/balance/${user.id}`)
         .then(res => res.json())
         .then(data => {
           if (data && typeof data.balance === 'number') {
@@ -125,7 +126,7 @@ export default function CheckoutPage() {
         .catch(err => console.error("Error fetching points balance:", err));
 
       // Fetch vouchers
-      fetch(`http://localhost:8080/api/vouchers/my-vouchers?userId=${user.id}`)
+      fetch(`${API_BASE}/api/vouchers/my-vouchers?userId=${user.id}`)
         .then(res => res.json())
         .then(data => {
           if (Array.isArray(data)) setAvailableVouchers(data);
@@ -144,7 +145,7 @@ export default function CheckoutPage() {
       if (!u?.id) throw new Error("Missing user id");
 
       const res = await fetch(
-        `http://localhost:8080/api/addresses?userId=${u.id}`,
+        `${API_BASE}/api/addresses?userId=${u.id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -214,7 +215,7 @@ export default function CheckoutPage() {
         userVoucherId: selectedVoucherId,
       };
 
-      const response = await fetch("http://localhost:8080/api/orders", {
+      const response = await fetch(`${API_BASE}/api/orders`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

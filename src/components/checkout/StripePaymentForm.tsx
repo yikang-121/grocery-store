@@ -6,6 +6,7 @@ import {
     useElements,
 } from "@stripe/react-stripe-js";
 import { FaLock } from "react-icons/fa";
+import { API_BASE } from '@/utils/apiBase';
 
 interface StripePaymentFormProps {
     amount: number;
@@ -27,7 +28,7 @@ export default function StripePaymentForm({ amount, onSuccess, onError }: Stripe
 
         try {
             // 1. Create PaymentIntent on the backend
-            const res = await fetch("http://localhost:8080/api/payments/create-payment-intent", {
+            const res = await fetch(`${API_BASE}/api/payments/create-payment-intent`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ amount, currency: "myr" }),

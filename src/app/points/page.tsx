@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { FaStar, FaGift, FaShoppingBag, FaHistory } from "react-icons/fa";
+import { API_BASE } from '@/utils/apiBase';
 
 const earnPoints = [
   {
@@ -33,13 +34,13 @@ export default function PointsPage() {
     setUserId(user.id);
 
     // Fetch balance
-    fetch(`http://localhost:8080/api/points/balance/${user.id}`)
+    fetch(`${API_BASE}/api/points/balance/${user.id}`)
       .then(res => res.json())
       .then(data => setBalance(data.balance || 0))
       .catch(err => console.error("Error fetching points:", err));
 
     // Fetch active vouchers
-    fetch(`http://localhost:8080/api/vouchers/my-vouchers?userId=${user.id}`)
+    fetch(`${API_BASE}/api/vouchers/my-vouchers?userId=${user.id}`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setVouchers(data);
@@ -47,7 +48,7 @@ export default function PointsPage() {
       .catch(err => console.error("Error fetching vouchers:", err));
 
     // Fetch history
-    fetch(`http://localhost:8080/api/points/history/${user.id}`)
+    fetch(`${API_BASE}/api/points/history/${user.id}`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -73,7 +74,7 @@ export default function PointsPage() {
 
     setRedeeming(true);
     try {
-      const res = await fetch(`http://localhost:8080/api/vouchers/redeem?userId=${userId}&tier=${tier}`, {
+      const res = await fetch(`${API_BASE}/api/vouchers/redeem?userId=${userId}&tier=${tier}`, {
         method: "POST"
       });
       if (res.ok) {

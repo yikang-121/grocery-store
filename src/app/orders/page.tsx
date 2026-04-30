@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { FaBox, FaTruck, FaCheck, FaExclamationTriangle, FaTimes } from "react-icons/fa";
 import { isAuthenticated, getCurrentUser, getAuthToken } from "@/utils/auth";
 import Link from "next/link";
+import { API_BASE } from '@/utils/apiBase';
 
 type OrderItem = {
   id: number;
@@ -163,7 +164,7 @@ export default function OrdersPage() {
       if (!user?.id) throw new Error("Missing user id");
 
       const res = await fetch(
-        `http://localhost:8080/api/orders?userId=${user.id}`,  // <-- add userId
+        `${API_BASE}/api/orders?userId=${user.id}`,  // <-- add userId
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -205,7 +206,7 @@ export default function OrdersPage() {
       const token = getAuthToken();
       if (!token) throw new Error("Not authenticated");
 
-      const res = await fetch(`http://localhost:8080/api/orders/${orderId}/cancel`, {
+      const res = await fetch(`${API_BASE}/api/orders/${orderId}/cancel`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -253,7 +254,7 @@ export default function OrdersPage() {
       const token = getAuthToken();
       if (!token) throw new Error("Not authenticated");
 
-      const res = await fetch(`http://localhost:8080/api/orders/${selectedOrderId}/cancel`, {
+      const res = await fetch(`${API_BASE}/api/orders/${selectedOrderId}/cancel`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,

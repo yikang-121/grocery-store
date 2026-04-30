@@ -8,7 +8,9 @@ import {
   FaTruck, FaSpinner, FaClock, FaBan,
 } from "react-icons/fa";
 
-const API = "http://localhost:8080/api/orders";
+import { API_BASE } from '@/utils/apiBase';
+
+const API = `${API_BASE}/api/orders`;
 
 interface OrderItem {
   id: number;

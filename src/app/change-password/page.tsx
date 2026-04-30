@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FaArrowLeft, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import { API_BASE } from '@/utils/apiBase';
 
 export default function ChangePasswordPage() {
   const router = useRouter();
@@ -51,7 +52,7 @@ export default function ChangePasswordPage() {
 
       console.log("Making request to change password..."); // Debug log
 
-      const response = await fetch("http://localhost:8080/api/auth/change-password", {
+      const response = await fetch(`${API_BASE}/api/auth/change-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

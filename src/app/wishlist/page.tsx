@@ -2,6 +2,7 @@
 import React from "react";
 import { FaShoppingCart, FaTrash } from "react-icons/fa";
 import { useCart } from "@/components/context/CartContext";
+import { API_BASE } from '@/utils/apiBase';
 
 export default function WishlistPage() {
   const { addToCart } = useCart();
@@ -16,7 +17,7 @@ export default function WishlistPage() {
     }
     const user = JSON.parse(userData);
 
-    fetch(`http://localhost:8080/api/wishlist/${user.id}`)
+    fetch(`${API_BASE}/api/wishlist/${user.id}`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -39,7 +40,7 @@ export default function WishlistPage() {
     const user = JSON.parse(userData);
 
     try {
-      const res = await fetch(`http://localhost:8080/api/wishlist/${user.id}/${productId}`, {
+      const res = await fetch(`${API_BASE}/api/wishlist/${user.id}/${productId}`, {
         method: "DELETE"
       });
       if (res.ok) {
