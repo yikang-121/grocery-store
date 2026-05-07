@@ -60,6 +60,10 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [orderedItems, setOrderedItems] = useState<any[]>([]);
   const [orderTotal, setOrderTotal] = useState(0);
+  const [orderSubtotal, setOrderSubtotal] = useState(0);
+  const [orderShippingFee, setOrderShippingFee] = useState(0);
+  const [orderPointsDiscount, setOrderPointsDiscount] = useState(0);
+  const [orderVoucherDiscount, setOrderVoucherDiscount] = useState(0);
   const [pointsBalance, setPointsBalance] = useState(0);
   const [usePoints, setUsePoints] = useState(false);
   const [availableVouchers, setAvailableVouchers] = useState<any[]>([]);
@@ -228,6 +232,10 @@ export default function CheckoutPage() {
         // Save current cart items and total before clearing
         setOrderedItems([...cart]);
         setOrderTotal(total);
+        setOrderSubtotal(subtotal);
+        setOrderShippingFee(shippingFee);
+        setOrderPointsDiscount(pointDiscount);
+        setOrderVoucherDiscount(voucherDiscount);
         cart.forEach(item => removeFromCart(item.id));
         setSuccess(true);
       } else {
@@ -326,14 +334,26 @@ export default function CheckoutPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal</span>
-                    <span className="font-semibold">RM{orderTotal.toFixed(2)}</span>
+                    <span className="font-semibold">RM{orderSubtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>Delivery</span>
                     <span className="font-semibold text-green-600">
-                      {shippingFee === 0 ? "FREE" : `RM${shippingFee.toFixed(2)}`}
+                      {orderShippingFee === 0 ? "FREE" : `RM${orderShippingFee.toFixed(2)}`}
                     </span>
                   </div>
+                  {orderPointsDiscount > 0 && (
+                    <div className="flex justify-between text-red-600 italic">
+                      <span>Points Discount</span>
+                      <span>-RM{orderPointsDiscount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {orderVoucherDiscount > 0 && (
+                    <div className="flex justify-between text-red-600 italic">
+                      <span>Voucher Discount</span>
+                      <span>-RM{orderVoucherDiscount.toFixed(2)}</span>
+                    </div>
+                  )}
                   <div className="border-t border-gray-300 pt-3">
                     <div className="flex justify-between text-2xl font-bold text-gray-800">
                       <span>Total Paid</span>
@@ -573,11 +593,13 @@ export default function CheckoutPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal</span>
-                    <span className="font-semibold">RM{total.toFixed(2)}</span>
+                    <span className="font-semibold">RM{subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>Delivery</span>
-                    <span className="font-semibold text-green-600">FREE</span>
+                    <span className="font-semibold text-green-600">
+                      {shippingFee === 0 ? "FREE" : `RM${shippingFee.toFixed(2)}`}
+                    </span>
                   </div>
                   
                   {/* Points Redemption Section */}
@@ -615,6 +637,13 @@ export default function CheckoutPage() {
                     <div className="flex justify-between text-red-600 font-semibold italic">
                       <span>Points Discount</span>
                       <span>-RM{pointDiscount.toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  {selectedVoucherId && voucherDiscount > 0 && (
+                    <div className="flex justify-between text-red-600 font-semibold italic">
+                      <span>Voucher Discount</span>
+                      <span>-RM{voucherDiscount.toFixed(2)}</span>
                     </div>
                   )}
 

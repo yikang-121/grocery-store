@@ -66,6 +66,8 @@ export default function AdminOrdersPage() {
 
   // Status update
   const [updatingOrder, setUpdatingOrder] = useState<string | null>(null);
+  const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
+  const [bulkUpdating, setBulkUpdating] = useState(false);
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -93,6 +95,41 @@ export default function AdminOrdersPage() {
       }
     } catch (e) { console.error(e); }
     setUpdatingOrder(null);
+  };
+
+  const bulkUpdateStatus = async (newStatus: string) => {
+    if (selectedOrders.length === 0) return;
+    setBulkUpdating(true);
+    try {
+      const res = await fetch(`${API}/bulk-status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderNos: selectedOrders, status: newStatus }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setOrders(prev => prev.map(o =>
+          selectedOrders.includes(o.id) ? { ...o, status: newStatus } : o
+        ));
+        setSelectedOrders([]);
+        alert(`Successfully updated ${data.updated} orders to ${newStatus}`);
+      }
+    } catch (e) { console.error(e); }
+    setBulkUpdating(false);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedOrders.length === filteredOrders.length) {
+      setSelectedOrders([]);
+    } else {
+      setSelectedOrders(filteredOrders.map(o => o.id));
+    }
+  };
+
+  const toggleSelectOrder = (orderNo: string) => {
+    setSelectedOrders(prev =>
+      prev.includes(orderNo) ? prev.filter(id => id !== orderNo) : [...prev, orderNo]
+    );
   };
 
   // Filter logic
@@ -170,11 +207,10 @@ export default function AdminOrdersPage() {
         <div className="flex flex-wrap gap-2 mb-6">
           <button
             onClick={() => setStatusFilter("ALL")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wide transition-all ${
-              statusFilter === "ALL"
+            className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wide transition-all ${statusFilter === "ALL"
                 ? "bg-gray-900 text-white shadow-md"
                 : "bg-white text-gray-500 border border-gray-200 hover:bg-gray-50"
-            }`}
+              }`}
           >
             All ({orders.length})
           </button>
@@ -185,11 +221,10 @@ export default function AdminOrdersPage() {
               <button
                 key={s}
                 onClick={() => setStatusFilter(statusFilter === s ? "ALL" : s)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wide transition-all flex items-center gap-1.5 ${
-                  statusFilter === s
+                className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wide transition-all flex items-center gap-1.5 ${statusFilter === s
                     ? `${cfg.bg} ${cfg.color} shadow-md ring-2 ring-offset-1 ring-current`
                     : "bg-white text-gray-500 border border-gray-200 hover:bg-gray-50"
-                }`}
+                  }`}
               >
                 {cfg.icon} {s} ({count})
               </button>
@@ -212,11 +247,10 @@ export default function AdminOrdersPage() {
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                showFilters
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${showFilters
                   ? "bg-purple-100 text-purple-700 border border-purple-200"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
+                }`}
             >
               <FaFilter size={12} /> Filters
             </button>
@@ -271,6 +305,46 @@ export default function AdminOrdersPage() {
           </div>
         </div>
 
+        {/* Bulk Actions & Selection Control */}
+        {!loading && filteredOrders.length > 0 && (
+          <div className="flex items-center justify-between mb-4 px-2">
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={selectedOrders.length === filteredOrders.length && filteredOrders.length > 0}
+                onChange={toggleSelectAll}
+                className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
+              />
+              <span className="text-sm font-semibold text-gray-600">
+                {selectedOrders.length > 0 ? `${selectedOrders.length} orders selected` : "Select All"}
+              </span>
+            </div>
+
+            {selectedOrders.length > 0 && (
+              <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4 duration-300">
+                <span className="text-xs font-bold text-gray-400 uppercase mr-2">Bulk Status:</span>
+                {STATUSES.map(s => (
+                  <button
+                    key={s}
+                    onClick={() => bulkUpdateStatus(s)}
+                    disabled={bulkUpdating}
+                    className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-[10px] font-black text-gray-700 hover:bg-gray-50 hover:border-purple-300 hover:text-purple-600 transition-all shadow-sm disabled:opacity-50"
+                  >
+                    {s}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setSelectedOrders([])}
+                  className="ml-2 p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                  title="Clear selection"
+                >
+                  <FaTimes size={14} />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Order List */}
         {loading ? (
           <div className="space-y-4">
@@ -293,7 +367,17 @@ export default function AdminOrdersPage() {
                   onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
                 >
                   <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <div className="flex-shrink-0">
+                    <div className="flex-shrink-0 flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedOrders.includes(order.id)}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          toggleSelectOrder(order.id);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
+                      />
                       {expandedOrder === order.id ? <FaChevronUp size={12} className="text-gray-400" /> : <FaChevronDown size={12} className="text-gray-400" />}
                     </div>
                     <div className="min-w-0">

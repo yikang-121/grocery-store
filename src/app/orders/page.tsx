@@ -1,7 +1,10 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FaBox, FaTruck, FaCheck, FaExclamationTriangle, FaTimes } from "react-icons/fa";
+import {
+  FaBox, FaTruck, FaCheck, FaExclamationTriangle, FaTimes,
+  FaClock, FaCreditCard, FaSpinner, FaBan
+} from "react-icons/fa";
 import { isAuthenticated, getCurrentUser, getAuthToken } from "@/utils/auth";
 import Link from "next/link";
 
@@ -31,19 +34,23 @@ type Order = {
   };
 };
 
-const getStatusIcon = (status: string) => {
-  switch (status?.toUpperCase()) {
-    case "DELIVERED":
-    case "COMPLETED":
-      return <FaCheck className="text-green-600" />;
-    case "IN_TRANSIT":
-    case "SHIPPED":
-      return <FaTruck className="text-blue-600" />;
-    case "CANCELLED":
-      return <FaTimes className="text-red-600" />;
-    default:
-      return <FaBox className="text-gray-600" />;
-  }
+const statusConfig: Record<string, { color: string; bg: string; icon: React.ReactNode }> = {
+  PENDING: { color: "text-gray-600", bg: "bg-gray-100", icon: <FaClock size={12} /> },
+  PAID: { color: "text-blue-700", bg: "bg-blue-100", icon: <FaCreditCard size={12} /> },
+  PROCESSING: { color: "text-orange-700", bg: "bg-orange-100", icon: <FaSpinner size={12} className="animate-spin" /> },
+  SHIPPED: { color: "text-indigo-700", bg: "bg-indigo-100", icon: <FaTruck size={12} /> },
+  COMPLETED: { color: "text-green-700", bg: "bg-green-100", icon: <FaCheck size={12} /> },
+  CANCELLED: { color: "text-red-700", bg: "bg-red-100", icon: <FaBan size={12} /> },
+};
+
+const getStatusBadge = (status: string) => {
+  const cfg = statusConfig[status?.toUpperCase()] || statusConfig.PENDING;
+  return (
+    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${cfg.bg} ${cfg.color} font-bold text-xs uppercase tracking-wide shadow-sm`}>
+      {cfg.icon}
+      <span>{status?.replace("_", " ")}</span>
+    </div>
+  );
 };
 
 type CancellationForm = {
@@ -367,11 +374,8 @@ export default function OrdersPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100">
-                      {getStatusIcon(order.status)}
-                      <span className="text-sm font-medium">{order.status}</span>
-                    </div>
-                    {order.status === 'PENDING' && (
+                    {getStatusBadge(order.status)}
+                    {(order.status === 'PENDING' || order.status === 'PAID') && (
                       <button
                         onClick={() => handleCancelClick(order.id)}
                         disabled={cancellingOrder === order.id}

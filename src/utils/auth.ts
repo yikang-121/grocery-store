@@ -75,7 +75,7 @@ export const logoutUser = async (): Promise<void> => {
   const token = localStorage.getItem('token');
   if (token) {
     try {
-      await fetch('http://localhost:8080/api/auth/logout', {
+      await fetch('http://localhost:8080/api/auth/signout', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

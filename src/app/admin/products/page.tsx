@@ -4,7 +4,8 @@ import {
   FaPlus, FaBoxOpen, FaChevronDown, FaChevronRight,
   FaExclamationTriangle, FaCheckCircle, FaClock,
   FaSearch, FaTimes, FaTag, FaCubes, FaCalendarAlt,
-  FaDollarSign, FaImage, FaBarcode, FaTrashAlt
+  FaDollarSign, FaImage, FaBarcode, FaTrashAlt,
+  FaSortAmountDown, FaSortAmountUp, FaChevronLeft
 } from "react-icons/fa";
 
 /* ---------- Types ---------- */
@@ -55,6 +56,12 @@ export default function AdminProductsPage() {
   const [spoilageForBatchId, setSpoilageForBatchId] = useState<number | null>(null);
   const [spoilageForm, setSpoilageForm] = useState({ qty: "", reason: "EXPIRED" });
 
+  // Sorting & Pagination state
+  const [sortBy, setSortBy] = useState<"name" | "price" | "stock" | "batches" | "category">("name");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 20;
+
   const fetchProducts = async () => {
     try {
       setLoading(true);
@@ -89,12 +96,56 @@ export default function AdminProductsPage() {
     });
   };
 
-  const filteredProducts = products.filter(
-    (p) =>
-      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.category.toLowerCase().includes(searchTerm.toLowerCase())
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  const filteredProducts = products
+    .filter(
+      (p) =>
+        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.category.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      let cmp = 0;
+      switch (sortBy) {
+        case "name":
+          cmp = a.name.localeCompare(b.name);
+          break;
+        case "price":
+          cmp = (a.price ?? 0) - (b.price ?? 0);
+          break;
+        case "stock":
+          cmp = (a.stockQuantity ?? 0) - (b.stockQuantity ?? 0);
+          break;
+        case "batches":
+          cmp = (a.batches?.length || 0) - (b.batches?.length || 0);
+          break;
+        case "category":
+          cmp = (a.category || "").localeCompare(b.category || "");
+          break;
+      }
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
   );
+
+  const handleSortToggle = (field: typeof sortBy) => {
+    if (sortBy === field) {
+      setSortDir(prev => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortBy(field);
+      setSortDir("asc");
+    }
+    setCurrentPage(1);
+  };
 
   const handleAddProduct = (e: React.FormEvent) => {
     e.preventDefault();
@@ -391,9 +442,9 @@ export default function AdminProductsPage() {
           </form>
         )}
 
-        {/* Search */}
-        <div className="mb-6">
-          <div className="relative">
+        {/* Search + Sort Controls */}
+        <div className="mb-6 flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
             <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
             <input
               type="text" value={searchTerm}
@@ -407,6 +458,36 @@ export default function AdminProductsPage() {
               </button>
             )}
           </div>
+
+          {/* Sort Controls */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500 font-medium uppercase tracking-wide whitespace-nowrap">Sort by:</span>
+            {(["name", "price", "stock", "batches", "category"] as const).map((field) => (
+              <button
+                key={field}
+                onClick={() => handleSortToggle(field)}
+                className={`px-3 py-2 text-xs font-semibold rounded-lg border transition-all duration-200 flex items-center gap-1.5 capitalize ${
+                  sortBy === field
+                    ? "bg-green-600 text-white border-green-600 shadow-sm"
+                    : "bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                {field}
+                {sortBy === field && (
+                  sortDir === "asc"
+                    ? <FaSortAmountUp size={10} />
+                    : <FaSortAmountDown size={10} />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Results Info */}
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs text-gray-400">
+            Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)} of {filteredProducts.length} products
+          </p>
         </div>
 
         {/* Product List */}
@@ -419,7 +500,7 @@ export default function AdminProductsPage() {
             </div>
           )}
 
-          {filteredProducts.map((product) => {
+          {paginatedProducts.map((product) => {
             const isExpanded = expandedIds.has(product.id);
             const batchCount = product.batches?.length || 0;
             const displayStock = product.batches && product.batches.length > 0
@@ -605,6 +686,59 @@ export default function AdminProductsPage() {
             );
           })}
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-8 mb-4">
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            >
+              <FaChevronLeft size={10} /> Prev
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(page => {
+                // Show first, last, current, and neighbors
+                if (page === 1 || page === totalPages) return true;
+                if (Math.abs(page - currentPage) <= 2) return true;
+                return false;
+              })
+              .reduce<(number | string)[]>((acc, page, idx, arr) => {
+                if (idx > 0 && typeof arr[idx - 1] === 'number' && (page as number) - (arr[idx - 1] as number) > 1) {
+                  acc.push('...');
+                }
+                acc.push(page);
+                return acc;
+              }, [])
+              .map((page, idx) =>
+                typeof page === 'string' ? (
+                  <span key={`ellipsis-${idx}`} className="px-2 text-gray-400 text-sm">...</span>
+                ) : (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`w-9 h-9 text-sm font-semibold rounded-lg transition-all ${
+                      currentPage === page
+                        ? "bg-green-600 text-white shadow-sm"
+                        : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                )
+              )}
+
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            >
+              Next <FaChevronRight size={10} />
+            </button>
+          </div>
+        )}
       </div>
     </main>
   );

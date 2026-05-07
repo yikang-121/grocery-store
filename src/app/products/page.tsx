@@ -254,7 +254,7 @@ export default function ProductsPage() {
                     {prod.name}
                   </h3>
                   <div className="text-2xl font-black text-black mb-4">
-                    RM{prod.price.toFixed(2)}
+                    RM{(prod.price ?? 0).toFixed(2)}
                   </div>
                 </Link>
                 <button

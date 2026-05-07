@@ -10,10 +10,6 @@ import { isAuthenticated } from "@/utils/auth";
 export default function CartPage() {
   const router = useRouter();
   const { cart, updateQuantity, removeFromCart } = useCart();
-  const [voucher, setVoucher] = useState("");
-  const [voucherApplied, setVoucherApplied] = useState(false);
-  const [voucherError, setVoucherError] = useState("");
-  const [discount, setDiscount] = useState(0);
   const [stockData, setStockData] = useState<Record<number, number>>({});
   const [stockLoading, setStockLoading] = useState(false);
   const [stockErrors, setStockErrors] = useState<Record<number, string>>({});
@@ -95,18 +91,7 @@ export default function CartPage() {
     fetchStockData();
   }, [cart]);
 
-  const handleApplyVoucher = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (voucher.trim().toUpperCase() === "SAVE10") {
-      setDiscount(total * 0.1);
-      setVoucherApplied(true);
-      setVoucherError("");
-    } else {
-      setDiscount(0);
-      setVoucherApplied(false);
-      setVoucherError("Invalid voucher code");
-    }
-  };
+
 
   const handleProceedToCheckout = () => {
     if (hasStockIssues()) {
@@ -301,41 +286,12 @@ export default function CartPage() {
             <div className="lg:col-span-1">
               <div className="bg-white border border-gray-200 rounded-lg p-6 sticky top-24 shadow-sm">
                 <h2 className="text-2xl font-black mb-6 tracking-tight">ORDER SUMMARY</h2>
-                
-                {/* Voucher Input */}
-                <form onSubmit={handleApplyVoucher} className="mb-6">
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Voucher code"
-                      value={voucher}
-                      onChange={e => setVoucher(e.target.value)}
-                      className="bg-white border border-gray-300 rounded px-4 py-3 text-black flex-1 placeholder-gray-500"
-                      disabled={voucherApplied}
-                    />
-                    <button
-                      type="submit"
-                      className="bg-black text-white px-6 py-3 rounded font-bold text-sm uppercase tracking-wide hover:bg-gray-800 transition-all duration-300"
-                      disabled={voucherApplied}
-                    >
-                      {voucherApplied ? "Applied" : "Apply"}
-                    </button>
-                  </div>
-                  {voucherError && <div className="text-red-500 text-sm mt-2">{voucherError}</div>}
-                </form>
-
                 {/* Summary Details */}
                 <div className="space-y-4 mb-8">
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal</span>
                     <span className="text-black font-semibold">RM{total.toFixed(2)}</span>
                   </div>
-                  {voucherApplied && (
-                    <div className="flex justify-between text-gray-600">
-                      <span>Discount (SAVE10)</span>
-                      <span className="text-green-600 font-semibold">- RM{discount.toFixed(2)}</span>
-                    </div>
-                  )}
                   <div className="flex justify-between text-gray-600">
                     <span>Delivery</span>
                     <span className="text-green-600 font-semibold">FREE</span>
@@ -343,7 +299,7 @@ export default function CartPage() {
                   <div className="border-t border-gray-200 pt-4">
                     <div className="flex justify-between text-xl font-black">
                       <span>Total</span>
-                      <span>RM{(total - discount).toFixed(2)}</span>
+                      <span>RM{total.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>

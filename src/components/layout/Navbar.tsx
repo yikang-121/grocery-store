@@ -118,7 +118,7 @@ export default function Navbar() {
             )}
             
             {/* Admin Dashboard Button (only show for admin users) */}
-            {user?.role === 'ADMIN' && (
+            {user?.role?.toLowerCase() === 'admin' && (
               <Link
                 href="/admin"
                 className="flex items-center justify-center w-10 h-10 border border-green-500 text-green-600 hover:bg-green-500 hover:text-white transition-all duration-200 rounded-full"

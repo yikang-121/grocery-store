@@ -1,6 +1,0 @@
-sku,name,category,cost_price,selling_price,quantity,image_url
-APP001,Red Apple,Fruits,1.20,2.50,100,https://images.unsplash.com/photo-1560806887-1e4cd0b6bccb?q=80&w=200&auto=format&fit=crop
-BAN002,Cavendish Banana,Fruits,0.80,1.50,150,https://images.unsplash.com/photo-1571771894821-ad990241c746?q=80&w=200&auto=format&fit=crop
-MILK003,Farm Fresh Milk 1L,Dairy,4.50,6.90,50,https://images.unsplash.com/photo-1550583724-125581cc25fb?q=80&w=200&auto=format&fit=crop
-EGG004,Omega Eggs Grade A (10s),Dairy,5.00,8.50,30,https://images.unsplash.com/photo-1506976785307-8732e854ad03?q=80&w=200&auto=format&fit=crop
-ORG005,Valencia Orange,Fruits,1.50,3.00,80,https://images.unsplash.com/photo-1547514701-42782101795e?q=80&w=200&auto=format&fit=crop

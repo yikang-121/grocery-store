@@ -20,11 +20,19 @@ interface Notification {
 const NOTIF_API = "http://localhost:8080/api/admin/notifications";
 
 export default function AdminDashboard() {
+
   const admin = {
     name: "Admin User",
     email: "admin@vgrocery.com",
     role: "Administrator",
   };
+
+  // --- Dashboard stats state (synced with database) ---
+  const [totalProducts, setTotalProducts] = useState<number | null>(null);
+  const [ordersToday, setOrdersToday] = useState<number | null>(null);
+  const [lowStockItems, setLowStockItems] = useState<number | null>(null);
+  const [revenueToday, setRevenueToday] = useState<number | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   // --- Notification state ---
   const [unreadCount, setUnreadCount] = useState(0);
@@ -32,6 +40,50 @@ export default function AdminDashboard() {
   const [showNotifPanel, setShowNotifPanel] = useState(false);
   const [notifLoading, setNotifLoading] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
+
+  // Fetch dashboard stats from backend
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      setStatsLoading(true);
+      try {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth() + 1;
+
+        // Fetch stock report and sales report in parallel
+        const [stockRes, salesRes] = await Promise.all([
+          fetch("http://localhost:8080/api/admin/reports/stock"),
+          fetch(`http://localhost:8080/api/admin/reports/sales?year=${year}&month=${month}`),
+        ]);
+
+        if (stockRes.ok) {
+          const stockData = await stockRes.json();
+          setTotalProducts(stockData.totalProducts ?? 0);
+          setLowStockItems(stockData.lowStockCount ?? 0);
+        }
+
+        if (salesRes.ok) {
+          const salesData = await salesRes.json();
+          // Filter for today's orders and revenue from daily sales breakdown
+          const todayStr = now.toISOString().split("T")[0]; // "YYYY-MM-DD"
+          const todaySales = salesData.dailySales?.find(
+            (d: { date: string }) => d.date === todayStr
+          );
+          setOrdersToday(todaySales?.orderCount ?? 0);
+          setRevenueToday(todaySales?.revenue ?? 0);
+        }
+      } catch (e) {
+        console.error("Error fetching dashboard stats:", e);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    fetchDashboardStats();
+    // Refresh stats every 60 seconds
+    const interval = setInterval(fetchDashboardStats, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchUnreadCount = async () => {
     try {
@@ -162,11 +214,13 @@ export default function AdminDashboard() {
   ];
 
   const stats = [
-    { label: "Total Products", value: "42", icon: <FaBoxOpen size={20} />, color: "text-green-600", bg: "bg-green-50 border-green-200" },
-    { label: "Orders Today", value: "12", icon: <FaShoppingCart size={20} />, color: "text-blue-600", bg: "bg-blue-50 border-blue-200" },
-    { label: "Low Stock Items", value: "5", icon: <FaExclamationTriangle size={20} />, color: "text-orange-600", bg: "bg-orange-50 border-orange-200" },
-    { label: "Revenue (Today)", value: "RM 847", icon: <FaChartLine size={20} />, color: "text-purple-600", bg: "bg-purple-50 border-purple-200" },
+    { label: "Total Products", value: statsLoading ? "—" : String(totalProducts ?? 0), icon: <FaBoxOpen size={20} />, color: "text-green-600", bg: "bg-green-50 border-green-200" },
+    { label: "Orders Today", value: statsLoading ? "—" : String(ordersToday ?? 0), icon: <FaShoppingCart size={20} />, color: "text-blue-600", bg: "bg-blue-50 border-blue-200" },
+    { label: "Low Stock Items", value: statsLoading ? "—" : String(lowStockItems ?? 0), icon: <FaExclamationTriangle size={20} />, color: "text-orange-600", bg: "bg-orange-50 border-orange-200" },
+    { label: "Revenue (Today)", value: statsLoading ? "—" : `RM ${(revenueToday ?? 0).toFixed(2)}`, icon: <FaChartLine size={20} />, color: "text-purple-600", bg: "bg-purple-50 border-purple-200" },
   ];
+
+
 
   return (
     <main className="bg-gray-50 min-h-screen">

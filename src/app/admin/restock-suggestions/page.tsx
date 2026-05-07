@@ -21,6 +21,7 @@ interface RestockCalculationResponse {
     seasonalityFactor: number;
     maxSellableQty?: number;
     safeTargetStock?: number;
+    currentStock?: number;
     incomingStock?: number;
     caseSize?: number;
 }
@@ -272,9 +273,26 @@ function ComparisonCard({ data }: { data: ProductComparison }) {
                 </div>
             </div>
 
-            <p className="text-sm font-medium text-slate-500 mb-8 border-b border-slate-100 pb-6">
+            <p className="text-sm font-medium text-slate-500 mb-4">
                 {data.category || "Uncategorized"}
             </p>
+
+            {/* Current Stock Indicator */}
+            <div className="mb-6 border border-slate-100 rounded-2xl p-4 flex items-center justify-between bg-slate-50/50">
+                <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Current Stock</span>
+                </div>
+                <span className={`text-2xl font-black ${
+                    (data.adaptive?.currentStock ?? 0) <= 5 
+                        ? "text-red-500" 
+                        : (data.adaptive?.currentStock ?? 0) <= 20 
+                            ? "text-amber-500" 
+                            : "text-emerald-600"
+                }`}>
+                    {data.adaptive?.currentStock ?? data.baseline?.currentStock ?? 0}
+                    <span className="text-xs font-bold text-slate-400 ml-1">units</span>
+                </span>
+            </div>
 
             <div className="grid grid-cols-2 gap-4 flex-1 mb-6">
                 <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex flex-col items-center justify-center text-center">

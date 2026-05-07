@@ -221,16 +221,68 @@ export default function AccountingPage() {
         {/* ===== PROFIT & LOSS TAB ===== */}
         {tab === "pnl" && (
           <div>
-            {/* Month selector */}
-            <div className="flex items-center gap-3 mb-6">
-              <select value={month} onChange={e => setMonth(+e.target.value)}
-                className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
-                {MONTHS.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
-              </select>
-              <select value={year} onChange={e => setYear(+e.target.value)}
-                className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
-                {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
-              </select>
+            {/* Month selector + Export buttons */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <select value={month} onChange={e => setMonth(+e.target.value)}
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
+                  {MONTHS.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
+                </select>
+                <select value={year} onChange={e => setYear(+e.target.value)}
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
+                  {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
+              </div>
+
+              {/* Export Buttons */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={async () => {
+                    try {
+                      const res = await fetch(`http://localhost:8080/api/admin/reports/export/csv?year=${year}&month=${month}`);
+                      if (!res.ok) throw new Error("Export failed");
+                      const blob = await res.blob();
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = `Financial_Report_${MONTHS[month - 1]}_${year}.csv`;
+                      document.body.appendChild(a);
+                      a.click();
+                      window.URL.revokeObjectURL(url);
+                      document.body.removeChild(a);
+                    } catch (e) {
+                      console.error(e);
+                      alert("Failed to export CSV report.");
+                    }
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
+                >
+                  <FaDownload size={12} /> Export CSV
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      const res = await fetch(`http://localhost:8080/api/admin/reports/export/pdf?year=${year}&month=${month}`);
+                      if (!res.ok) throw new Error("Export failed");
+                      const blob = await res.blob();
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = `Financial_Report_${MONTHS[month - 1]}_${year}.pdf`;
+                      document.body.appendChild(a);
+                      a.click();
+                      window.URL.revokeObjectURL(url);
+                      document.body.removeChild(a);
+                    } catch (e) {
+                      console.error(e);
+                      alert("Failed to export PDF report.");
+                    }
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm font-semibold hover:bg-emerald-600 transition-all shadow-sm shadow-emerald-200"
+                >
+                  <FaDownload size={12} /> Export PDF
+                </button>
+              </div>
             </div>
 
             {loading ? (
